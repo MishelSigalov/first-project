@@ -226,7 +226,7 @@ import {
 } from "@/db/dbCommunicator.js";
 
 export default defineComponent({
-  name: "HomeView",
+  name: "CatalogView",
 
   data() {
     return {
