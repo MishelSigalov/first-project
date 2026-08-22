@@ -17,6 +17,48 @@ export async function getProductsByName(name) {
     .toArray();
 }
 
+// SEARCH PRODUCTS BY CATEGORY
+export async function getProductsByCategory(category) {
+  if (!category) return await getAllProducts();
+
+  // Dynamically format "Home & Kitchen" -> "home_and_kitchen"
+  const formattedCategory = category
+    .toLowerCase()
+    .replace(/\s*&\s*/g, "_and_") // Replace '&' surrounded by spaces with '_and_'
+    .replace(/\s+/g, "_");         // Replace remaining spaces with underscores
+
+  return await db.products
+    .filter((product) => 
+      product.category && 
+      product.category.toLowerCase() === formattedCategory
+    )
+    .toArray();
+}
+
+// SEARCH PRODUCTS BY DATE RANGE
+
+export async function getProductsByDateRange(startDate, EndDate) {
+
+  if (!startDate && !EndDate) return await getAllProducts();
+
+  // reversing the date so it matches the db
+
+  const formattedStartDate = startDate
+    .split("/")
+    .reverse()
+    .join("-");
+
+  const formattedEndDate = EndDate
+    .split("/")
+    .reverse()
+    .join("-");
+
+  return await db.products.filter((product) =>
+      product.dateOfCreation >= formattedStartDate 
+      && product.dateOfCreation <= formattedEndDate)
+      .toArray();
+}
+
 // ADD NEW PRODUCT
 export async function addProduct(product) {
   return await db.products.add(product);

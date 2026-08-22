@@ -1,5 +1,6 @@
 <template>
   <v-container>
+    <!--List/Grid Displayer-->
     <v-row>
       <v-col>
         <v-card class="pa-2" color="transparent" rounded="md" elevation="1">
@@ -30,27 +31,22 @@
       <v-card class="pa-4 mb-4" elevation="1" rounded="md">
         <v-row>
           <!-- Search Input -->
-          <v-col cols="11">
-            <v-text-field
-              v-model="searchQuery"
-              label="Search Products"
-              prepend-inner-icon="mdi-magnify"
-              density="compact"
-              variant="outlined"
-              clearable
-              hide-details
-            />
-          </v-col>
-          <v-col cols="1">
-            <v-btn color="primary" size="default" @click="handleList"
-              >Search
-            </v-btn>
-          </v-col>
+          <v-text-field
+            v-model="searchQuery"
+            label="Search Products"
+            prepend-inner-icon="mdi-magnify"
+            density="compact"
+            variant="outlined"
+            clearable
+            hide-details
+            @input="filterProducts()"
+            @click:clear="filterProducts()"
+          />
         </v-row>
 
         <v-row>
           <!-- Category Select -->
-          <v-col cols="12" sm="6" md="4">
+          <v-col cols="6" sm="6" md="6">
             <v-select
               v-model="selectedCategory"
               :items="categories"
@@ -58,31 +54,43 @@
               density="compact"
               variant="outlined"
               clearable
-              hide-details
+              @update:model-value="filterProducts()"
+              @click:clear="filterProducts()"
             />
           </v-col>
-          <v-col>
-            <v-btn color="primary" size="default" @click="handleList"
-              >Search
-            </v-btn>
-          </v-col>
+        </v-row>
 
-          <!-- Date Filter (Single or Range) -->
-          <v-col cols="12" sm="6" md="4">
+        <v-row>
+          <v-col cols="12" sm="5">
             <v-text-field
-              v-model="startDate"
-              label="Added After Date"
-              type="date"
+              v-model="startDateInput"
+              label="Start Date (DD/MM/YYYY)"
+              placeholder="DD/MM/YYYY"
               density="compact"
               variant="outlined"
+              :rules="[validateDateRule]"
+              maxlength="10"
+              hide-details="auto"
               clearable
-              hide-details
             />
           </v-col>
-          <v-col>
-            <v-btn color="primary" size="default" @click="handleList"
-              >Search
-            </v-btn>
+
+          <v-col cols="12" sm="5">
+            <v-text-field
+              v-model="endDateInput"
+              label="End Date (DD/MM/YYYY)"
+              placeholder="DD/MM/YYYY"
+              density="compact"
+              variant="outlined"
+              :rules="[validateDateRule]"
+              maxlength="10"
+              hide-details="auto"
+              clearable
+            />
+          </v-col>
+
+          <v-col cols="12" sm="2">
+            <v-btn color="primary" block @click="filterProducts">Search</v-btn>
           </v-col>
         </v-row>
       </v-card>
@@ -96,7 +104,16 @@
         height="500"
         item-value="name"
         fixed-header
-      ></v-data-table-virtual>
+      >
+        <!--Removing underscores-->
+        <template v-slot:[`item.category`]="{ item }">
+          {{ item.category?.replace(/_/g, " ") }}
+        </template>
+        <!--revesing date-->
+        <template v-slot:[`item.dateOfCreation`]="{ item }">
+          {{ item.dateOfCreation?.split("-").reverse().join("/") }}
+        </template>
+      </v-data-table-virtual>
     </v-container>
 
     <!--Grid View-->
@@ -111,12 +128,18 @@
         >
           <v-card class="pa-4" variant="outlined">
             <v-card-title>{{ product.name }}</v-card-title>
-            <v-card-subtitle>Category: {{ product.category }}</v-card-subtitle>
+            <v-card-subtitle
+              >Category:
+              {{ product.category?.replace(/_/g, " ") }}</v-card-subtitle
+            >
             <v-card-subtitle>{{ product.description }}</v-card-subtitle>
             <v-card-text>
               <p class="text-h6">${{ product.price }}</p>
               <p>Stock: {{ product.stockAvailability }}</p>
-              <p>Date Added: {{ product.dateOfCreation }}</p>
+              <p>
+                Date Added:
+                {{ product.dateOfCreation.split("-").reverse().join("/") }}
+              </p>
             </v-card-text>
           </v-card>
         </v-col>
@@ -129,20 +152,38 @@
 import { defineComponent } from "vue";
 
 // Components
-import { getAllProducts } from "@/db/dbCommunicator.js";
-import { getProductsByName } from "@/db/dbCommunicator.js";
+import {
+  getAllProducts,
+  getProductsByCategory,
+  getProductsByName,
+  getProductsByDateRange,
+} from "@/db/dbCommunicator.js";
 
 export default defineComponent({
   name: "HomeView",
 
   data() {
     return {
+      searchQuery: "",
+      startDateInput: "",
+      endDateInput: "",
+      selectedCategory: null,
       headers: [
         { title: "Product", align: "start", key: "name" },
         { title: "Category", align: "end", key: "category" },
         { title: "Stock", align: "end", key: "stockAvailability" },
         { title: "Price($)", align: "end", key: "price" },
         { title: "Date Added", align: "end", key: "dateOfCreation" },
+      ],
+      categories: [
+        "Electronics",
+        "Fitness",
+        "Clothing",
+        "Books",
+        "Gaming",
+        "Home & Kitchen",
+        "Office Supplies",
+        "Outdoor",
       ],
       currentView: 0, // 'list' | 'grid'
       products: [],
@@ -151,9 +192,59 @@ export default defineComponent({
   async mounted() {
     this.products = await getAllProducts();
   },
+  watch: {
+    startDateInput(newVal) {
+      if (!newVal) {
+        // Triggers when the 'x' clear button is clicked or text is deleted
+        this.filterProducts();
+      }
+    },
+    endDateInput(newVal) {
+      if (!newVal) {
+        this.filterProducts();
+      }
+    },
+  },
 
   methods: {
-    // --- UI Methods ---
+    isValidDate(dateStr) {
+      if (!dateStr) return true; // Empty string is valid for optional inputs
+      if (dateStr.length !== 10) return false;
+
+      const [dayStr, monthStr, yearStr] = dateStr.split("/");
+      const day = parseInt(dayStr, 10);
+      const month = parseInt(monthStr, 10);
+      const year = parseInt(yearStr, 10);
+
+      // Basic month and year boundaries
+      if (isNaN(day) || isNaN(month) || isNaN(year)) return false;
+      if (month < 1 || month > 12 || year < 1900 || year > 2100) return false;
+
+      // Days allowed per month (accounting for leap years in Feb)
+      const daysInMonth = [
+        31,
+        (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0 ? 29 : 28,
+        31,
+        30,
+        31,
+        30,
+        31,
+        31,
+        30,
+        31,
+        30,
+        31,
+      ];
+
+      return day >= 1 && day <= daysInMonth[month - 1];
+    },
+
+    // Vuetify rule for UI error messages
+    validateDateRule(value) {
+      if (!value) return true;
+      return this.isValidDate(value) || "Enter a valid date (DD/MM/YYYY)";
+    },
+
     handleList() {
       this.currentView = 0;
       console.log(this.currentView);
@@ -164,9 +255,54 @@ export default defineComponent({
       console.log(this.currentView);
     },
 
-    async searchProducts(name) {
-      this.products = await getProductsByName(name);
+    async filterProducts() {
+      const activeResults = [];
+
+      if (this.searchQuery) {
+        activeResults.push(await getProductsByName(this.searchQuery));
+      }
+
+      if (this.selectedCategory) {
+        activeResults.push(await getProductsByCategory(this.selectedCategory));
+      }
+
+      if (this.startDateInput && this.endDateInput) {
+        activeResults.push(
+          await getProductsByDateRange(this.startDateInput, this.endDateInput)
+        );
+      }
+
+      // 2. If no filters were filled out, fetch everything
+      if (activeResults.length === 0) {
+        this.products = await getAllProducts();
+        return;
+      }
+
+      // 3. Simplified Stage 3: Keep items from the first list that exist in all other lists
+      const firstList = activeResults[0];
+
+      this.products = firstList.filter((product) => {
+        return activeResults.every((list) =>
+          list.some((item) => item.name === product.name)
+        );
+      });
     },
+
+    //old functions: combined them into one
+    /*async searchProductsByName() {
+      this.products = await getProductsByName(this.searchQuery);
+    },
+
+    async searchProductsByCategory() {
+      this.products = await getProductsByCategory(this.selectedCategory);
+    },
+
+    async filterProductsByDateRange() {
+      this.products = await getProductsByDateRange(
+        this.startDateInput,
+        this.endDateInput
+      );
+    },*/
   },
 });
 </script>

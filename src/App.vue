@@ -3,7 +3,7 @@
   <v-app>
     <v-main>
       <v-toolbar color="primary" dark>
-        <v-toolbar-title>My App</v-toolbar-title>
+        <v-toolbar-title>Mishel's Shop</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-btn rounded text to="/">Products</v-btn>
       </v-toolbar>
