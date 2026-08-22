@@ -11,11 +11,12 @@
       >
         <v-card class="pa-4" variant="outlined">
           <v-card-title>{{ product.name }}</v-card-title>
-          <v-card-subtitle>ID: {{ product.id }}</v-card-subtitle>
           <v-card-subtitle>Category: {{ product.category }}</v-card-subtitle>
+          <v-card-subtitle>{{ product.description }}</v-card-subtitle>
           <v-card-text>
             <p class="text-h6">${{ product.price }}</p>
             <p>Stock: {{ product.stockAvailability }}</p>
+            <p>Date Added: {{ product.dateOfCreation }}</p>
           </v-card-text>
         </v-card>
       </v-col>
@@ -27,7 +28,7 @@
 import { getAllProducts } from "@/db/dbCommunicator.js";
 
 export default {
-  name: "ProductsDisplay",
+  name: "ProductsDisplayGrid",
   data: () => ({
     products: [],
   }),
