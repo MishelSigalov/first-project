@@ -1,18 +1,37 @@
-/* eslint-disable prettier/prettier */
 import { db } from "./dbStarter.js";
 
-// GET ALL PRODUCTS
-export async function getAllProducts() {
-  return await db.products.toArray();
+export async function getAllProducts(sortBy = null) {
+  let products = await db.products.toArray();
+
+  switch (sortBy) {
+    case "priceAsc":
+      products.sort((a, b) => a.price - b.price);
+      break;
+
+    case "priceDesc":
+      products.sort((a, b) => b.price - a.price);
+      break;
+
+    case "dateAsc":
+      products.sort((a, b) => a.dateOfCreation.localeCompare(b.dateOfCreation));
+      break;
+
+    case "dateDesc":
+      products.sort((a, b) => b.dateOfCreation.localeCompare(a.dateOfCreation));
+      break;
+  }
+
+  return products;
 }
 
 // SEARCH PRODUCTS BY NAME (Case-Insensitive)
 export async function getProductsByName(name) {
   if (!name) return await getAllProducts();
-  
+
   return await db.products
-    .filter((product) => 
-      product.name && product.name.toLowerCase().includes(name.toLowerCase())
+    .filter(
+      (product) =>
+        product.name && product.name.toLowerCase().includes(name.toLowerCase())
     )
     .toArray();
 }
@@ -25,12 +44,12 @@ export async function getProductsByCategory(category) {
   const formattedCategory = category
     .toLowerCase()
     .replace(/\s*&\s*/g, "_and_") // Replace '&' surrounded by spaces with '_and_'
-    .replace(/\s+/g, "_");         // Replace remaining spaces with underscores
+    .replace(/\s+/g, "_"); // Replace remaining spaces with underscores
 
   return await db.products
-    .filter((product) => 
-      product.category && 
-      product.category.toLowerCase() === formattedCategory
+    .filter(
+      (product) =>
+        product.category && product.category.toLowerCase() === formattedCategory
     )
     .toArray();
 }
@@ -38,25 +57,21 @@ export async function getProductsByCategory(category) {
 // SEARCH PRODUCTS BY DATE RANGE
 
 export async function getProductsByDateRange(startDate, EndDate) {
-
   if (!startDate && !EndDate) return await getAllProducts();
 
   // reversing the date so it matches the db
 
-  const formattedStartDate = startDate
-    .split("/")
-    .reverse()
-    .join("-");
+  const formattedStartDate = startDate.split("/").reverse().join("-");
 
-  const formattedEndDate = EndDate
-    .split("/")
-    .reverse()
-    .join("-");
+  const formattedEndDate = EndDate.split("/").reverse().join("-");
 
-  return await db.products.filter((product) =>
-      product.dateOfCreation >= formattedStartDate 
-      && product.dateOfCreation <= formattedEndDate)
-      .toArray();
+  return await db.products
+    .filter(
+      (product) =>
+        product.dateOfCreation >= formattedStartDate &&
+        product.dateOfCreation <= formattedEndDate
+    )
+    .toArray();
 }
 
 // ADD NEW PRODUCT

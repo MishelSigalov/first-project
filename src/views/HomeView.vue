@@ -129,6 +129,21 @@
 
     <!--Grid View-->
     <v-container v-if="currentView == 1">
+      <v-row class="text-end">
+        <v-btn @click="sortByPrice">
+          Price
+          <v-icon>
+            {{ priceAscending ? "mdi-arrow-up" : "mdi-arrow-down" }}
+          </v-icon>
+        </v-btn>
+
+        <v-btn @click="sortByDate">
+          Date
+          <v-icon>
+            {{ dateAscending ? "mdi-arrow-up" : "mdi-arrow-down" }}
+          </v-icon>
+        </v-btn>
+      </v-row>
       <v-row>
         <v-col
           v-for="product in products"
@@ -209,6 +224,8 @@ export default defineComponent({
 
   data() {
     return {
+      priceAscending: true,
+      dateAscending: true,
       deleteDialog: false,
       productToDelete: null,
       print: "",
@@ -353,6 +370,22 @@ export default defineComponent({
     async deleteProduct() {
       await deleteProduct(this.productToDelete.id);
       this.products = await getAllProducts();
+    },
+
+    async sortByPrice() {
+      this.priceAscending = !this.priceAscending;
+
+      const sort = this.priceAscending ? "priceAsc" : "priceDesc";
+
+      this.products = await getAllProducts(sort);
+    },
+
+    async sortByDate() {
+      this.dateAscending = !this.dateAscending;
+
+      const sort = this.dateAscending ? "dateAsc" : "dateDesc";
+
+      this.products = await getAllProducts(sort);
     },
 
     //old functions: combined them into one
