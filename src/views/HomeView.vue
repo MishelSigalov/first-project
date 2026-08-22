@@ -3,6 +3,7 @@
     <!--List/Grid Displayer-->
     <v-row>
       <v-col>
+        <h1>{{ print }}</h1>
         <v-card class="pa-2" color="transparent" rounded="md" elevation="1">
           <v-btn-group
             width="auto"
@@ -113,6 +114,16 @@
         <template v-slot:[`item.dateOfCreation`]="{ item }">
           {{ item.dateOfCreation?.split("-").reverse().join("/") }}
         </template>
+        <!--adding delete button-->
+        <template v-slot:[`item.actions`]="{ item }">
+          <v-btn
+            icon="mdi-delete"
+            color="red"
+            variant="text"
+            @click="openDeleteDialog(item)"
+          >
+          </v-btn>
+        </template>
       </v-data-table-virtual>
     </v-container>
 
@@ -141,11 +152,44 @@
                 {{ product.dateOfCreation.split("-").reverse().join("/") }}
               </p>
             </v-card-text>
+
+            <!--Delete button-->
+            <v-card-actions>
+              <v-btn
+                icon="mdi-delete"
+                color="red"
+                variant="text"
+                @click="openDeleteDialog(product)"
+              >
+              </v-btn>
+            </v-card-actions>
           </v-card>
         </v-col>
       </v-row>
     </v-container>
   </v-container>
+  //custom "are you sure?" message
+  <v-dialog v-model="deleteDialog" max-width="400">
+    <v-card>
+      <v-card-title class="text-h5"> Delete Product? </v-card-title>
+
+      <v-card-text>
+        Are you sure you want to delete
+        <strong class="text-red-darken-2">{{ productToDelete?.name }}</strong
+        >? This action cannot be undone.
+      </v-card-text>
+
+      <v-card-actions>
+        <v-spacer></v-spacer>
+
+        <v-btn variant="text" @click="deleteDialog = false"> Cancel </v-btn>
+
+        <v-btn color="red" variant="text" @click="confirmDelete">
+          Delete
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script>
@@ -157,6 +201,7 @@ import {
   getProductsByCategory,
   getProductsByName,
   getProductsByDateRange,
+  deleteProduct,
 } from "@/db/dbCommunicator.js";
 
 export default defineComponent({
@@ -164,6 +209,9 @@ export default defineComponent({
 
   data() {
     return {
+      deleteDialog: false,
+      productToDelete: null,
+      print: "",
       searchQuery: "",
       startDateInput: "",
       endDateInput: "",
@@ -174,6 +222,7 @@ export default defineComponent({
         { title: "Stock", align: "end", key: "stockAvailability" },
         { title: "Price($)", align: "end", key: "price" },
         { title: "Date Added", align: "end", key: "dateOfCreation" },
+        { title: "", key: "actions", sortable: false },
       ],
       categories: [
         "Electronics",
@@ -207,6 +256,19 @@ export default defineComponent({
   },
 
   methods: {
+    openDeleteDialog(product) {
+      this.productToDelete = product;
+      this.deleteDialog = true;
+    },
+
+    async confirmDelete() {
+      if (!this.productToDelete) return;
+
+      await this.deleteProduct();
+
+      this.deleteDialog = false;
+      this.productToDelete = null;
+    },
     isValidDate(dateStr) {
       if (!dateStr) return true; // Empty string is valid for optional inputs
       if (dateStr.length !== 10) return false;
@@ -286,6 +348,11 @@ export default defineComponent({
           list.some((item) => item.name === product.name)
         );
       });
+    },
+
+    async deleteProduct() {
+      await deleteProduct(this.productToDelete.id);
+      this.products = await getAllProducts();
     },
 
     //old functions: combined them into one
