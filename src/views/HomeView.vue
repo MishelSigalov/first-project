@@ -182,6 +182,11 @@
         </v-col>
       </v-row>
     </v-container>
+    <v-container>
+      <v-row>
+        <v-btn icon="mdi-plus-box" @click="addProduct"></v-btn>
+      </v-row>
+    </v-container>
   </v-container>
   //custom "are you sure?" message
   <v-dialog v-model="deleteDialog" max-width="400">
@@ -217,6 +222,7 @@ import {
   getProductsByName,
   getProductsByDateRange,
   deleteProduct,
+  addProduct,
 } from "@/db/dbCommunicator.js";
 
 export default defineComponent({
@@ -351,13 +357,10 @@ export default defineComponent({
         );
       }
 
-      // 2. If no filters were filled out, fetch everything
       if (activeResults.length === 0) {
         this.products = await getAllProducts();
         return;
       }
-
-      // 3. Simplified Stage 3: Keep items from the first list that exist in all other lists
       const firstList = activeResults[0];
 
       this.products = firstList.filter((product) => {
@@ -365,6 +368,20 @@ export default defineComponent({
           list.some((item) => item.name === product.name)
         );
       });
+    },
+
+    //Add product(for now hardcoded)
+    async addProduct() {
+      await addProduct({
+        id: 21,
+        name: "Camping Backpack",
+        description: "Durable waterproof backpack for outdoor adventures",
+        price: 54.99,
+        category: "outdoor",
+        stockAvailability: 27,
+        dateOfCreation: "2026-04-18",
+      });
+      this.products = await getAllProducts();
     },
 
     async deleteProduct() {
