@@ -185,7 +185,7 @@
           </div>
 
           <div class="text-caption text-medium-emphasis">
-            Product #{{ item.id }}
+            {{ item.description }}
           </div>
         </template>
 
