@@ -93,7 +93,11 @@
 
     <!--Custom dialogs-->
     <!--save dialog-->
-    <v-dialog v-model="saveDialog" max-width="400">
+    <v-dialog
+      v-model="saveDialog"
+      max-width="400"
+      @keyup.enter="saveDialog = false"
+    >
       <v-card>
         <v-card-title class="text-h2">
           {{ isEditing ? " Edit Successful !" : " Add Successful !" }}
@@ -130,7 +134,12 @@
         <v-card-actions>
           <v-spacer></v-spacer>
 
-          <v-btn color="primary" variant="text" @click="errorDialog = false">
+          <v-btn
+            color="primary"
+            variant="text"
+            @keyup.enter="errorDialog = false"
+            @click="errorDialog = false"
+          >
             Okay
           </v-btn>
         </v-card-actions>
