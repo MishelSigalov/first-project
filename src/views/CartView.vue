@@ -1,6 +1,5 @@
 <template>
   <v-container v-if="userID" max-width="1100">
-    <!-- Header -->
     <div class="d-flex align-center justify-space-between mb-8">
       <div>
         <h1 class="text-h3 font-weight-bold">Your Cart</h1>
@@ -22,7 +21,6 @@
       </v-btn>
     </div>
 
-    <!-- Empty Cart -->
     <v-card
       v-if="cartItems.length === 0"
       class="pa-12 text-center"
@@ -48,11 +46,8 @@
       </v-btn>
     </v-card>
 
-    <!-- Cart -->
     <v-row v-else align="start">
-      <!-- PRODUCTS -->
       <v-col cols="12" md="8">
-        <!-- Product Card -->
         <v-card
           v-for="item in cartItems"
           :key="item[0]"
@@ -62,22 +57,37 @@
         >
           <v-card-text class="pa-5">
             <v-row align="center">
-              <!-- Product Information -->
               <v-col cols="12" sm="5">
-                <div>
-                  <div class="text-h6 font-weight-bold text-primary">
-                    {{ getProduct(item[0])?.name || "Loading..." }}
-                  </div>
+                <div class="d-flex align-center">
+                  <v-avatar
+                    size="80"
+                    rounded="lg"
+                    class="mr-4 bg-grey-lighten-3"
+                  >
+                    <v-img
+                      :src="getProduct(item[0])?.image"
+                      alt="Product image"
+                      cover
+                    >
+                      <template #error>
+                        <v-icon size="36" color="grey"> mdi-image-off </v-icon>
+                      </template>
+                    </v-img>
+                  </v-avatar>
 
-                  <div class="text-body-2 text-medium-emphasis mt-1">
-                    $
-                    {{ getProduct(item[0])?.price?.toFixed(2) || "0.00" }}
-                    each
+                  <div>
+                    <div class="text-h6 font-weight-bold text-primary">
+                      {{ getProduct(item[0])?.name || "Loading..." }}
+                    </div>
+
+                    <div class="text-body-2 text-medium-emphasis mt-1">
+                      ${{ getProduct(item[0])?.price?.toFixed(2) || "0.00" }}
+                      each
+                    </div>
                   </div>
                 </div>
               </v-col>
 
-              <!-- Quantity -->
               <v-col cols="12" sm="4">
                 <div class="d-flex align-center justify-center">
                   <v-btn
@@ -103,7 +113,6 @@
                 </div>
               </v-col>
 
-              <!-- Price + Delete -->
               <v-col cols="12" sm="3">
                 <div class="d-flex align-center justify-end">
                   <div class="text-h6 font-weight-bold mr-3">
@@ -126,7 +135,6 @@
         </v-card>
       </v-col>
 
-      <!-- ORDER SUMMARY -->
       <v-col cols="12" md="4">
         <v-card
           rounded="xl"
@@ -136,41 +144,34 @@
         >
           <h2 class="text-h5 font-weight-bold mb-6">Order Summary</h2>
 
-          <!-- Items -->
           <div class="d-flex justify-space-between mb-3">
-            <span class="text-medium-emphasis"> Items </span>
+            <span class="text-medium-emphasis">Items</span>
 
-            <span>
-              {{ cartCount }}
-            </span>
+            <span>{{ cartCount }}</span>
           </div>
 
-          <!-- Subtotal -->
           <div class="d-flex justify-space-between mb-3">
-            <span class="text-medium-emphasis"> Subtotal </span>
+            <span class="text-medium-emphasis">Subtotal</span>
 
-            <span> ${{ subtotal.toFixed(2) }} </span>
+            <span>${{ subtotal.toFixed(2) }}</span>
           </div>
 
-          <!-- Shipping -->
           <div class="d-flex justify-space-between mb-4">
-            <span class="text-medium-emphasis"> Shipping </span>
+            <span class="text-medium-emphasis">Shipping</span>
 
-            <span class="text-success"> Free </span>
+            <span class="text-success">Free</span>
           </div>
 
           <v-divider class="mb-4" />
 
-          <!-- Total -->
           <div class="d-flex justify-space-between mb-6">
-            <span class="text-h6 font-weight-bold"> Total </span>
+            <span class="text-h6 font-weight-bold">Total</span>
 
             <span class="text-h6 font-weight-bold">
               ${{ subtotal.toFixed(2) }}
             </span>
           </div>
 
-          <!-- Checkout -->
           <v-btn
             block
             color="primary"
@@ -186,7 +187,6 @@
     </v-row>
   </v-container>
 
-  <!-- NOT LOGGED IN -->
   <v-container v-else class="fill-height d-flex align-center justify-center">
     <v-card
       class="pa-10 text-center"
@@ -206,8 +206,8 @@
         Log In
       </v-btn>
     </v-card>
-    <!--order complete-->
   </v-container>
+
   <v-dialog
     v-model="orderDialog"
     max-width="700"
@@ -215,7 +215,7 @@
   >
     <v-card>
       <v-card-title class="text-h2 font-weight-bold">
-        <strong class="text-error"> Order Received </strong>
+        <strong class="text-error">Order Received</strong>
       </v-card-title>
 
       <v-card-actions>
@@ -224,6 +224,7 @@
         <v-btn color="primary" variant="text" @click="orderRedirect">
           Go to order
         </v-btn>
+
         <v-btn color="primary" variant="text" @click="orderDialog = false">
           Close
         </v-btn>
@@ -248,32 +249,27 @@ export default {
 
   data() {
     return {
-      // The user's cart from IndexedDB
       cart: null,
-
-      // Products indexed by their ID
       products: {},
       orderDialog: false,
     };
   },
 
   computed: {
-    // Logged-in user ID
     userID() {
       return this.$store.state.userID;
     },
 
-    // Products inside the cart
     cartItems() {
-      return this.cart?.products || [];
+      return (this.cart?.products || []).filter(
+        (item) => Array.isArray(item) && item.length >= 2
+      );
     },
 
-    // Total amount of products
     cartCount() {
       return this.cartItems.reduce((total, item) => total + item[1], 0);
     },
 
-    // Total price
     subtotal() {
       return this.cartItems.reduce((total, item) => {
         const product = this.products[item[0]];
@@ -298,7 +294,7 @@ export default {
       this.orderDialog = false;
       this.$router.push({ name: "orders" });
     },
-    // Load the cart directly from IndexedDB
+
     async loadCart() {
       this.cart = await getCart(this.userID);
 
@@ -311,7 +307,6 @@ export default {
       await this.loadProducts();
     },
 
-    // Load product information for every product in the cart
     async loadProducts() {
       for (const item of this.cartItems) {
         const productId = item[0];
@@ -328,33 +323,25 @@ export default {
       }
     },
 
-    // Get product by ID
     getProduct(productId) {
       return this.products[productId];
     },
 
-    // Remove an entire product
     async removeItem(productId) {
       await removeProductFromCart(productId, this.userID);
-
       await this.loadCart();
     },
 
-    // Increase quantity
     async increaseQuantity(productId) {
       await addProductToCart(productId, this.userID);
-
       await this.loadCart();
     },
 
-    // Decrease quantity
     async decreaseQuantity(productId) {
       await decreaseQuantityDB(productId, this.userID);
-
       await this.loadCart();
     },
 
-    // Delete entire cart
     async clearCart() {
       await clearCartDB(this.userID);
 
@@ -362,16 +349,16 @@ export default {
       this.products = {};
     },
 
-    // Checkout
     async checkout() {
       if (!this.cart) {
         return;
       }
 
       try {
-        this.orderDialog = true;
         await addOrder(this.cart.id, this.userID, this.subtotal);
-        // Cart is deleted by addOrder()
+
+        this.orderDialog = true;
+
         this.cart = null;
         this.products = {};
       } catch (error) {
