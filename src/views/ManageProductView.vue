@@ -143,51 +143,116 @@
 
     <!--Custom dialogs-->
     <!--save dialog-->
+    <!-- Save dialog -->
     <v-dialog
       v-model="saveDialog"
-      max-width="400"
+      max-width="500"
       @keyup.enter="saveDialog = false"
       @keydown.tab="saveDialog = false"
     >
-      <v-card>
-        <v-card-title class="text-h2">
-          {{ isEditing ? " Edit Successful !" : " Add Successful !" }}
+      <v-card rounded="xl" elevation="8">
+        <!-- Header -->
+        <v-card-title class="pa-6 pb-3">
+          <div class="d-flex align-center">
+            <v-avatar color="success" size="48" class="mr-4">
+              <v-icon color="white" size="26"> mdi-check </v-icon>
+            </v-avatar>
+
+            <div>
+              <div class="text-h5 font-weight-bold">
+                {{ isEditing ? "Edit Successful!" : "Add Successful!" }}
+              </div>
+
+              <div class="text-body-2 text-medium-emphasis mt-1">
+                {{
+                  isEditing
+                    ? "Product updated successfully"
+                    : "Product added successfully"
+                }}
+              </div>
+            </div>
+          </div>
         </v-card-title>
 
-        <v-card-text class="text-h5">
-          <strong class="text-primary">{{ product.name }}</strong>
-          {{ isEditing ? " updated" : " added" }}
+        <v-divider />
+
+        <!-- Product -->
+        <v-card-text class="pa-6">
+          <v-card variant="tonal" color="success" rounded="lg" class="pa-4">
+            <div class="text-body-1">
+              <strong class="text-success">
+                {{ product.name }}
+              </strong>
+
+              {{ isEditing ? "has been updated." : "has been added." }}
+            </div>
+          </v-card>
         </v-card-text>
 
-        <v-card-actions>
+        <v-divider />
+
+        <!-- Actions -->
+        <v-card-actions class="pa-5">
           <v-spacer></v-spacer>
 
-          <v-btn color="primary" variant="text" @click="closeSaveDialog">
+          <v-btn
+            color="primary"
+            variant="flat"
+            rounded="lg"
+            @click="closeSaveDialog"
+          >
             Okay
           </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
+
     <!--error dialog-->
+    <!-- Error dialog -->
     <v-dialog v-model="errorDialog" max-width="600">
-      <v-card>
-        <v-card-title class="text-h2 text-red font-weight-bold">
-          {{ isEditing ? " Edit Failed" : " Adding Failed" }}
+      <v-card rounded="xl" elevation="8">
+        <!-- Header -->
+        <v-card-title class="pa-6 pb-3">
+          <div class="d-flex align-center">
+            <v-avatar color="error" size="48" class="mr-4">
+              <v-icon color="white" size="26"> mdi-alert </v-icon>
+            </v-avatar>
+
+            <div>
+              <div class="text-h5 font-weight-bold">
+                {{ isEditing ? "Edit Failed" : "Adding Failed" }}
+              </div>
+
+              <div class="text-body-2 text-medium-emphasis mt-1">
+                Please fix the following errors
+              </div>
+            </div>
+          </div>
         </v-card-title>
 
-        <v-card-text>
-          <div v-for="error in submitErrors" :key="error.id" class="mb-2">
-            <strong class="error-id">{{ error.id }}:</strong>
-            {{ error.errorMessages[0] }}
-          </div>
+        <v-divider />
+
+        <!-- Errors -->
+        <v-card-text class="pa-6">
+          <v-card variant="tonal" color="error" rounded="lg" class="pa-4">
+            <div v-for="error in submitErrors" :key="error.id" class="mb-3">
+              <strong class="error-id text-error"> {{ error.id }}: </strong>
+
+              {{ error.errorMessages[0] }}
+            </div>
+          </v-card>
         </v-card-text>
 
-        <v-card-actions>
+        <v-divider />
+
+        <!-- Actions -->
+        <v-card-actions class="pa-5">
           <v-spacer></v-spacer>
 
           <v-btn
-            color="primary"
-            variant="text"
+            color="error"
+            variant="flat"
+            rounded="lg"
             @keyup.enter="errorDialog = false"
             @click="errorDialog = false"
           >

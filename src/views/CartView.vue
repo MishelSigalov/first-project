@@ -210,23 +210,64 @@
 
   <v-dialog
     v-model="orderDialog"
-    max-width="700"
+    max-width="550"
     @keyup.enter="orderDialog = false"
   >
-    <v-card>
-      <v-card-title class="text-h2 font-weight-bold">
-        <strong class="text-error">Order Received</strong>
+    <v-card rounded="xl" elevation="8">
+      <!-- Header -->
+      <v-card-title class="pa-6 pb-3">
+        <div class="d-flex align-center">
+          <v-avatar color="success" size="52" class="mr-4">
+            <v-icon color="white" size="30"> mdi-shopping </v-icon>
+          </v-avatar>
+
+          <div>
+            <div class="text-h5 font-weight-bold">Order Received</div>
+
+            <div class="text-body-2 text-medium-emphasis mt-1">
+              Your order has been placed successfully
+            </div>
+          </div>
+        </div>
       </v-card-title>
 
-      <v-card-actions>
+      <v-divider />
+
+      <!-- Message -->
+      <v-card-text class="pa-6">
+        <v-card variant="tonal" color="success" rounded="lg" class="pa-4">
+          <div class="d-flex align-center">
+            <v-icon color="success" size="28" class="mr-3">
+              mdi-truck-check
+            </v-icon>
+
+            <div>
+              <div class="font-weight-bold">Thank you for your purchase!</div>
+
+              <div class="text-body-2 mt-1">
+                Your order has been successfully processed.
+              </div>
+            </div>
+          </div>
+        </v-card>
+      </v-card-text>
+
+      <v-divider />
+
+      <!-- Actions -->
+      <v-card-actions class="pa-5">
         <v-spacer></v-spacer>
 
-        <v-btn color="primary" variant="text" @click="orderRedirect">
-          Go to order
-        </v-btn>
+        <v-btn variant="text" @click="orderDialog = false"> Close </v-btn>
 
-        <v-btn color="primary" variant="text" @click="orderDialog = false">
-          Close
+        <v-btn
+          color="primary"
+          variant="flat"
+          rounded="lg"
+          prepend-icon="mdi-receipt"
+          @click="orderRedirect"
+        >
+          Go to Orders
         </v-btn>
       </v-card-actions>
     </v-card>

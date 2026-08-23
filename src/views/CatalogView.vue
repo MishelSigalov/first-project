@@ -288,22 +288,61 @@
     </v-container>
   </v-container>
   <!--custom "are you sure?" dialog-->
-  <v-dialog v-model="deleteDialog" max-width="400">
-    <v-card>
-      <v-card-title class="text-h5"> Delete Product? </v-card-title>
+  <v-dialog v-model="deleteDialog" max-width="500">
+    <v-card rounded="xl" elevation="8">
+      <!-- Header -->
+      <v-card-title class="pa-6 pb-3">
+        <div class="d-flex align-center">
+          <v-avatar color="error" size="48" class="mr-4">
+            <v-icon color="white" size="26"> mdi-trash-can-outline </v-icon>
+          </v-avatar>
 
-      <v-card-text>
-        Are you sure you want to delete
-        <strong class="text-red-darken-2">{{ productToDelete?.name }}</strong
-        >? <br />This action cannot be undone.
+          <div>
+            <div class="text-h5 font-weight-bold">Delete Product?</div>
+
+            <div class="text-body-2 text-medium-emphasis mt-1">
+              This action cannot be undone
+            </div>
+          </div>
+        </div>
+      </v-card-title>
+
+      <v-divider />
+
+      <!-- Content -->
+      <v-card-text class="pa-6">
+        <v-card variant="tonal" color="error" rounded="lg" class="pa-4">
+          <div class="d-flex align-center">
+            <v-icon color="error" size="28" class="mr-3">
+              mdi-alert-outline
+            </v-icon>
+
+            <div class="text-body-1">
+              Are you sure you want to delete
+              <strong class="text-error">
+                {{ productToDelete?.name }}
+              </strong>
+              ?
+            </div>
+          </div>
+        </v-card>
       </v-card-text>
 
-      <v-card-actions>
+      <v-divider />
+
+      <!-- Actions -->
+      <v-card-actions class="pa-5">
         <v-spacer></v-spacer>
 
         <v-btn variant="text" @click="deleteDialog = false"> Cancel </v-btn>
 
-        <v-btn color="red" variant="text" @click="confirmDelete">
+        <v-btn
+          color="error"
+          variant="flat"
+          rounded="lg"
+          prepend-icon="mdi-trash-can-outline"
+          @click="confirmDelete"
+        >
           Delete
         </v-btn>
       </v-card-actions>
@@ -312,34 +351,81 @@
   <!--custom added to cart dialog-->
   <v-dialog
     v-model="cartDialog"
-    max-width="700"
+    max-width="600"
     @keyup.enter="cartDialog = false"
     @keydown.tab="cartDialog = false"
   >
-    <v-card>
-      <v-card-title class="text-h2 font-weight-bold">
-        <strong class="text-primary">{{
-          productAddedToCart.name + " "
-        }}</strong>
-        added to cart!
+    <v-card rounded="xl" elevation="8">
+      <!-- Header -->
+      <v-card-title class="pa-6 pb-3">
+        <div class="d-flex align-center">
+          <v-avatar color="success" size="48" class="mr-4">
+            <v-icon color="white" size="28"> mdi-cart-check </v-icon>
+          </v-avatar>
+
+          <div>
+            <div class="text-h5 font-weight-bold">Added to Cart</div>
+
+            <div class="text-body-2 text-medium-emphasis mt-1">
+              Your item has been added successfully
+            </div>
+          </div>
+        </div>
       </v-card-title>
 
-      <v-img :src="productAddedToCart.image" height="350" contain>
-        <template #error>
-          <div class="d-flex align-center justify-center fill-height">
-            <v-icon size="64" color="grey">mdi-image-off</v-icon>
-          </div>
-        </template>
-      </v-img>
+      <v-divider />
 
-      <v-card-actions>
+      <!-- Product -->
+      <v-card-text class="pa-6">
+        <v-card variant="tonal" rounded="xl" class="pa-4">
+          <div class="d-flex align-center">
+            <!-- Image -->
+            <v-avatar size="110" rounded="lg" class="mr-5 bg-grey-lighten-4">
+              <v-img :src="productAddedToCart.image" alt="Product image" cover>
+                <template #error>
+                  <div class="d-flex align-center justify-center fill-height">
+                    <v-icon size="45" color="grey"> mdi-image-off </v-icon>
+                  </div>
+                </template>
+              </v-img>
+            </v-avatar>
+
+            <!-- Product details -->
+            <div class="flex-grow-1">
+              <div class="text-h6 font-weight-bold text-primary">
+                {{ productAddedToCart.name }}
+              </div>
+
+              <div class="text-body-2 text-medium-emphasis mt-2">
+                Added successfully to your shopping cart
+              </div>
+
+              <div class="text-h6 font-weight-bold mt-3">
+                ${{ Number(productAddedToCart.price).toFixed(2) }}
+              </div>
+            </div>
+          </div>
+        </v-card>
+      </v-card-text>
+
+      <v-divider />
+
+      <!-- Actions -->
+      <v-card-actions class="pa-5">
         <v-spacer></v-spacer>
-        <v-btn color="primary" variant="text" @click="cartRedirect">
-          Go to cart
-        </v-btn>
 
         <v-btn color="primary" variant="text" @click="cartDialog = false">
-          Continue shopping
+          Continue Shopping
+        </v-btn>
+
+        <v-btn
+          color="primary"
+          variant="flat"
+          rounded="lg"
+          prepend-icon="mdi-cart-outline"
+          @click="cartRedirect"
+        >
+          Go to Cart
         </v-btn>
       </v-card-actions>
     </v-card>

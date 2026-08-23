@@ -158,22 +158,59 @@
     </div>
   </v-container>
   <!--custom "are you sure?" dialog-->
-  <v-dialog v-model="deleteDialog" max-width="400">
-    <v-card>
-      <v-card-title class="text-h5"> Delete Order? </v-card-title>
+  <v-dialog v-model="deleteDialog" max-width="500">
+    <v-card rounded="xl" elevation="8">
+      <!-- Header -->
+      <v-card-title class="pa-6 pb-3">
+        <div class="d-flex align-center">
+          <v-avatar color="error" size="48" class="mr-4">
+            <v-icon color="white" size="26"> mdi-delete </v-icon>
+          </v-avatar>
 
-      <v-card-text>
-        Are you sure you want to delete
-        <strong class="text-red-darken-2">{{ "order " + orderToDelete }}</strong
-        >? <br />This action cannot be undone.
+          <div>
+            <div class="text-h5 font-weight-bold">Delete Order?</div>
+
+            <div class="text-body-2 text-medium-emphasis mt-1">
+              This action cannot be undone
+            </div>
+          </div>
+        </div>
+      </v-card-title>
+
+      <v-divider />
+
+      <!-- Content -->
+      <v-card-text class="pa-6">
+        <v-card variant="tonal" color="error" rounded="lg" class="pa-4">
+          <div class="d-flex align-center">
+            <v-icon color="error" size="28" class="mr-3"> mdi-alert </v-icon>
+
+            <div class="text-body-1">
+              Are you sure you want to delete
+              <strong class="text-error">
+                {{ "order " + orderToDelete }}
+              </strong>
+              ?
+            </div>
+          </div>
+        </v-card>
       </v-card-text>
 
-      <v-card-actions>
+      <v-divider />
+
+      <!-- Actions -->
+      <v-card-actions class="pa-5">
         <v-spacer></v-spacer>
 
         <v-btn variant="text" @click="deleteDialog = false"> Cancel </v-btn>
 
-        <v-btn color="red" variant="text" @click="confirmDelete">
+        <v-btn
+          color="error"
+          variant="flat"
+          rounded="lg"
+          prepend-icon="mdi-delete"
+          @click="confirmDelete"
+        >
           Delete
         </v-btn>
       </v-card-actions>
