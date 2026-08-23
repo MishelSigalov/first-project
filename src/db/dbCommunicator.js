@@ -180,3 +180,56 @@ export async function clearCart(clientId) {
 export async function getCart(clientId) {
   return await db.orderDetails.where("clientId").equals(clientId).first();
 }
+
+export async function getOrders(clientId) {
+  return await db.orders
+    .where("clientId")
+    .equals(clientId)
+    .reverse()
+    .sortBy("dateOfPurchase");
+}
+
+export async function addOrder(listId, clientId, totalPrice) {
+  // Get current cart
+  const cart = await db.orderDetails.get(listId);
+
+  if (!cart) {
+    throw new Error("Cart not found");
+  }
+
+  if (cart.clientId !== clientId) {
+    throw new Error("This cart does not belong to this user");
+  }
+
+  const orderProducts = [];
+
+  // Get information about every product in the cart
+  for (const item of cart.products) {
+    const productId = item[0];
+    const amount = item[1];
+
+    const product = await db.products.get(productId);
+
+    if (!product) {
+      throw new Error(`Product ${productId} not found`);
+    }
+
+    orderProducts.push({
+      productId: product.id,
+      name: product.name,
+      price: product.price,
+      amount: amount,
+    });
+  }
+
+  // Create the order
+  const orderId = await db.orders.add({
+    clientId: clientId,
+    dateOfPurchase: new Date(),
+    totalPrice: totalPrice,
+    products: orderProducts,
+  });
+
+  // Return the newly created order
+  return await db.orders.get(orderId);
+}

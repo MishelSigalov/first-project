@@ -97,6 +97,7 @@
       v-model="saveDialog"
       max-width="400"
       @keyup.enter="saveDialog = false"
+      @keydown.tab="saveDialog = false"
     >
       <v-card>
         <v-card-title class="text-h2">

@@ -256,6 +256,7 @@
     v-model="cartDialog"
     max-width="700"
     @keyup.enter="cartDialog = false"
+    @keydown.tab="cartDialog = false"
   >
     <v-card>
       <v-card-title class="text-h2 font-weight-bold">

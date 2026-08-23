@@ -31,6 +31,16 @@
           </v-badge>
         </v-btn>
 
+        <!--orders-->
+        <v-btn
+          v-if="$store.state.username"
+          :to="{ name: 'orders' }"
+          variant="text"
+          prepend-icon="mdi-package-check-outline"
+        >
+          Orders
+        </v-btn>
+
         <!--username and logout-->
         <v-chip
           v-if="$store.state.username"

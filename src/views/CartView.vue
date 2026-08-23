@@ -153,7 +153,7 @@
               size="large"
               rounded="lg"
               prepend-icon="mdi-credit-card-outline"
-              @click="checkout()"
+              @click="checkout"
             >
               Checkout
             </v-btn>
@@ -187,7 +187,7 @@
 </template>
 
 <script>
-import { getProductById } from "@/db/dbCommunicator.js";
+import { getProductById, getCart, addOrder } from "@/db/dbCommunicator.js";
 
 export default {
   name: "CartView",
@@ -283,8 +283,16 @@ export default {
       this.products = {};
     },
 
-    checkout() {
-      alert("Hi!");
+    async checkout() {
+      const cart = await getCart(this.userID);
+
+      if (!cart) {
+        console.error("Cart not found");
+        return;
+      }
+
+      await addOrder(cart.id, this.userID, this.subtotal);
+      this.clearCart();
     },
   },
 };
