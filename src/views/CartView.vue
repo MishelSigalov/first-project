@@ -206,7 +206,30 @@
         Log In
       </v-btn>
     </v-card>
+    <!--order complete-->
   </v-container>
+  <v-dialog
+    v-model="orderDialog"
+    max-width="700"
+    @keyup.enter="orderDialog = false"
+  >
+    <v-card>
+      <v-card-title class="text-h2 font-weight-bold">
+        <strong class="text-error"> Order Received </strong>
+      </v-card-title>
+
+      <v-card-actions>
+        <v-spacer></v-spacer>
+
+        <v-btn color="primary" variant="text" @click="orderRedirect">
+          Go to order
+        </v-btn>
+        <v-btn color="primary" variant="text" @click="orderDialog = false">
+          Close
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script>
@@ -230,6 +253,7 @@ export default {
 
       // Products indexed by their ID
       products: {},
+      orderDialog: false,
     };
   },
 
@@ -270,6 +294,9 @@ export default {
   },
 
   methods: {
+    orderRedirect() {
+      this.$router.push({ name: "orders" });
+    },
     // Load the cart directly from IndexedDB
     async loadCart() {
       this.cart = await getCart(this.userID);
@@ -337,8 +364,8 @@ export default {
       }
 
       try {
+        this.orderDialog = true;
         await addOrder(this.cart.id, this.userID, this.subtotal);
-
         // Cart is deleted by addOrder()
         this.cart = null;
         this.products = {};

@@ -275,6 +275,9 @@
 
       <v-card-actions>
         <v-spacer></v-spacer>
+        <v-btn color="primary" variant="text" @click="cartRedirect">
+          Go to cart
+        </v-btn>
 
         <v-btn color="primary" variant="text" @click="cartDialog = false">
           Okay
@@ -353,6 +356,11 @@ export default defineComponent({
   },
 
   methods: {
+    cartRedirect() {
+      this.cartDialog = false;
+      this.$router.push({ name: "cart" });
+    },
+
     async addToCart(productId, productName) {
       this.productAddedToCart = productName;
       this.cartDialog = true;
