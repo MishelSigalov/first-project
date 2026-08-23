@@ -316,6 +316,10 @@ export default {
       for (const item of this.cartItems) {
         const productId = item[0];
 
+        if (productId === undefined || productId === null) {
+          continue;
+        }
+
         const product = await getProductById(productId);
 
         if (product) {

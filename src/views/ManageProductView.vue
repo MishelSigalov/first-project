@@ -80,6 +80,25 @@
           :rules="[requiredRule, dateRule]"
         />
 
+        <v-file-input
+          v-model="imageFile"
+          label="Product Image"
+          accept="image/png"
+          prepend-inner-icon="mdi-image"
+          variant="outlined"
+          class="mb-3"
+          :rules="[imageRule]"
+          @update:model-value="previewImage"
+        />
+
+        <v-img
+          v-if="imagePreview"
+          :src="imagePreview"
+          height="200"
+          contain
+          class="mb-5 rounded-lg"
+        ></v-img>
+
         <!-- Save -->
         <v-btn type="submit" color="primary" size="large" block>
           <v-icon start>
@@ -295,6 +314,7 @@ export default {
           category: this.product.category,
           stockAvailability: this.product.stockAvailability,
           dateOfCreation: this.product.dateOfCreation,
+          image: this.image,
         };
         await addProduct(productToSave);
 

@@ -89,7 +89,7 @@
               maxlength="10"
               hide-details="auto"
               clearable
-              @input="startDateInput = formatDate(startDateInput)"
+              @input="endDateInput = formatDate(endDateInput)"
             />
           </v-col>
 
@@ -119,46 +119,86 @@
         height="500"
         item-value="name"
         fixed-header
+        class="elevation-1 rounded-lg"
       >
+        <template v-slot:[`item.image`]="{ item }">
+          <v-avatar size="64" rounded="lg" class="my-2">
+            <v-img :src="item.image" alt="Product image" cover>
+              <template #error>
+                <v-icon size="32" color="grey"> mdi-image-off </v-icon>
+              </template>
+            </v-img>
+          </v-avatar>
+        </template>
+
         <template v-slot:[`item.name`]="{ item }">
-          <span class="text-primary font-weight-bold text-h2">
+          <span class="text-primary font-weight-bold text-body-1">
             {{ item.name }}
           </span>
         </template>
-        <!--Removing underscores-->
+
         <template v-slot:[`item.category`]="{ item }">
-          {{ item.category?.replace(/_/g, " ") }}
+          <v-chip
+            size="small"
+            color="primary"
+            variant="tonal"
+            class="text-capitalize"
+          >
+            {{ item.category?.replace(/_/g, " ") }}
+          </v-chip>
         </template>
-        <!--revesing date-->
+
         <template v-slot:[`item.dateOfCreation`]="{ item }">
           {{ item.dateOfCreation?.split("-").reverse().join("/") }}
         </template>
-        <!--adding edit, delete and add to cart buttons-->
+
+        <template v-slot:[`item.price`]="{ item }">
+          <span class="font-weight-bold">
+            ${{ Number(item.price).toFixed(2) }}
+          </span>
+        </template>
+
+        <template v-slot:[`item.stockAvailability`]="{ item }">
+          <v-chip
+            size="small"
+            :color="item.stockAvailability > 0 ? 'success' : 'error'"
+            variant="tonal"
+          >
+            {{ item.stockAvailability }}
+          </v-chip>
+        </template>
+
         <template v-slot:[`item.actions`]="{ item }">
-          <v-btn
-            prepend-icon="mdi-cart-plus"
-            color="primary"
-            variant="text"
-            v-if="$store.state.userID"
-            @click="addToCart(item.id, item.name)"
-          >
-            Add to cart
-          </v-btn>
-          <v-btn
-            icon="mdi-pencil"
-            color="primary"
-            variant="text"
-            v-if="$store.state.isAdmin"
-            @click="editProduct(item.id)"
-          ></v-btn>
-          <v-btn
-            icon="mdi-delete"
-            color="red"
-            variant="text"
-            v-if="$store.state.isAdmin"
-            @click="openDeleteDialog(item)"
-          >
-          </v-btn>
+          <div class="d-flex align-center ga-1">
+            <v-btn
+              v-if="$store.state.userID"
+              prepend-icon="mdi-cart-plus"
+              color="primary"
+              variant="tonal"
+              size="small"
+              @click="addToCart(item)"
+            >
+              Add to cart
+            </v-btn>
+
+            <v-btn
+              v-if="$store.state.isAdmin"
+              icon="mdi-pencil"
+              color="primary"
+              variant="text"
+              size="small"
+              @click="editProduct(item.id)"
+            ></v-btn>
+
+            <v-btn
+              v-if="$store.state.isAdmin"
+              icon="mdi-delete"
+              color="red"
+              variant="text"
+              size="small"
+              @click="openDeleteDialog(item)"
+            ></v-btn>
+          </div>
         </template>
       </v-data-table-virtual>
     </v-container>
@@ -189,6 +229,15 @@
           md="4"
         >
           <v-card class="pa-4" variant="outlined">
+            <!-- Product image -->
+            <v-img :src="product.image" height="300" cover class="mb-4 rounded">
+              <template #error>
+                <div class="d-flex align-center justify-center fill-height">
+                  <v-icon size="64" color="grey"> mdi-image-off </v-icon>
+                </div>
+              </template></v-img
+            >
+
             <v-card-title class="text-primary font-weight-bold"
               >{{ product.name }}
             </v-card-title>
@@ -213,7 +262,7 @@
                 color="primary"
                 variant="text"
                 v-if="$store.state.userID"
-                @click="addToCart(product.id, product.name)"
+                @click="addToCart(product)"
               >
                 Add to cart
               </v-btn>
@@ -269,9 +318,19 @@
   >
     <v-card>
       <v-card-title class="text-h2 font-weight-bold">
-        <strong class="text-primary">{{ productAddedToCart + " " }}</strong>
+        <strong class="text-primary">{{
+          productAddedToCart.name + " "
+        }}</strong>
         added to cart!
       </v-card-title>
+
+      <v-img :src="productAddedToCart.image" height="350" contain>
+        <template #error>
+          <div class="d-flex align-center justify-center fill-height">
+            <v-icon size="64" color="grey">mdi-image-off</v-icon>
+          </div>
+        </template>
+      </v-img>
 
       <v-card-actions>
         <v-spacer></v-spacer>
@@ -315,8 +374,14 @@ export default defineComponent({
       startDateInput: "",
       endDateInput: "",
       selectedCategory: null,
-      productAddedToCart: "",
+      productAddedToCart: null,
       headers: [
+        {
+          title: "Image",
+          key: "image",
+          sortable: false,
+          width: 90,
+        },
         { title: "Product", align: "start", key: "name" },
         { title: "Category", align: "end", key: "category" },
         { title: "Stock", align: "end", key: "stockAvailability" },
@@ -361,11 +426,11 @@ export default defineComponent({
       this.$router.push({ name: "cart" });
     },
 
-    async addToCart(productId, productName) {
-      this.productAddedToCart = productName;
+    async addToCart(product) {
+      this.productAddedToCart = product;
       this.cartDialog = true;
 
-      await addProductToCart(productId, this.$store.state.userID);
+      await addProductToCart(product.id, this.$store.state.userID);
     },
 
     openDeleteDialog(product) {
