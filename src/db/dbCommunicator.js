@@ -237,6 +237,7 @@ export async function addOrder(listId, clientId, totalPrice) {
       name: product.name,
       price: product.price,
       amount: amount,
+      image: product.image,
     });
   }
 

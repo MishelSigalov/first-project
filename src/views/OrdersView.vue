@@ -52,8 +52,8 @@
         <!-- Order header -->
         <v-card-item class="pa-6">
           <template #prepend>
-            <v-avatar color="primary" size="50">
-              <v-icon color="white"> mdi-package-check </v-icon>
+            <v-avatar color="grey-darken-3" size="50">
+              <v-icon color="white"> mdi-receipt </v-icon>
             </v-avatar>
           </template>
 
@@ -85,13 +85,24 @@
           <div class="text-subtitle-1 font-weight-bold mb-4">Items</div>
 
           <div
-            v-for="product in order.products"
+            v-for="product in (order.products || []).filter((p) => p)"
             :key="product.productId"
             class="order-item"
           >
-            <!-- Icon -->
-            <v-avatar size="48" color="grey-lighten-3" class="mr-4">
-              <v-icon color="grey-darken-1"> mdi-package-variant </v-icon>
+            <!-- Image -->
+            <v-avatar size="80" rounded="lg" class="mr-4 bg-grey-lighten-3">
+              <v-img
+                v-if="product.image"
+                :src="product.image"
+                alt="Product image"
+                cover
+              >
+                <template #error>
+                  <v-icon size="36" color="grey"> mdi-image-off </v-icon>
+                </template>
+              </v-img>
+
+              <v-icon v-else size="36" color="grey"> mdi-image-off </v-icon>
             </v-avatar>
 
             <!-- Product info -->
@@ -101,7 +112,9 @@
               </div>
 
               <div class="text-body-2 text-medium-emphasis mt-1">
-                ${{ Number(product.price).toFixed(2) }} × {{ product.amount }}
+                ${{ Number(product.price).toFixed(2) }}
+                ×
+                {{ product.amount }}
               </div>
             </div>
 
