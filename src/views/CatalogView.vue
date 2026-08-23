@@ -285,6 +285,7 @@ import {
   getProductsByName,
   getProductsByDateRange,
   deleteProduct,
+  addProductToCart,
 } from "@/db/dbCommunicator.js";
 
 export default defineComponent({
@@ -347,10 +348,7 @@ export default defineComponent({
       this.productAddedToCart = productName;
       this.cartDialog = true;
 
-      await this.$store.dispatch("addToCart", {
-        productId,
-        clientId: this.$store.state.userID,
-      });
+      await addProductToCart(productId, this.$store.state.userID);
     },
 
     openDeleteDialog(product) {

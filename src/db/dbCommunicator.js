@@ -1,4 +1,5 @@
 import { db } from "./dbStarter.js";
+import { liveQuery } from "dexie";
 
 export async function getAllProducts(sortBy = null) {
   let products = await db.products.toArray();
@@ -22,6 +23,23 @@ export async function getAllProducts(sortBy = null) {
   }
 
   return products;
+}
+
+export function getCartCountLive(clientId) {
+  return liveQuery(async () => {
+    if (!clientId) return 0;
+
+    const cart = await db.orderDetails
+      .where("clientId")
+      .equals(clientId)
+      .first();
+
+    if (!cart || !cart.products) {
+      return 0;
+    }
+
+    return cart.products.reduce((total, item) => total + item[1], 0);
+  });
 }
 
 // SEARCH PRODUCTS BY NAME (Case-Insensitive)
@@ -229,6 +247,9 @@ export async function addOrder(listId, clientId, totalPrice) {
     totalPrice: totalPrice,
     products: orderProducts,
   });
+
+  // Delete the shopping cart after successful purchase
+  await db.orderDetails.delete(listId);
 
   // Return the newly created order
   return await db.orders.get(orderId);

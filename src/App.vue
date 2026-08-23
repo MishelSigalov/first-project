@@ -26,9 +26,16 @@
 
         <!--cart-->
         <v-btn icon :to="{ name: 'cart' }">
-          <v-badge :content="$store.getters.cartCount" color="red" floating>
+          <v-badge
+            v-if="cartCount > 0"
+            :content="cartCount"
+            color="red"
+            floating
+          >
             <v-icon>mdi-cart</v-icon>
           </v-badge>
+
+          <v-icon v-else>mdi-cart</v-icon>
         </v-btn>
 
         <!--orders-->
@@ -70,26 +77,68 @@
 </template>
 
 <script>
-import { onMounted } from "vue";
-import { useStore } from "vuex";
+import { getCartCountLive } from "@/db/dbCommunicator.js";
 
 export default {
   name: "App",
-  setup() {
-    const store = useStore();
 
-    onMounted(async () => {
-      if (store.state.userID) {
-        await store.dispatch("loadCart", store.state.userID);
-      }
-    });
+  data() {
+    return {
+      cartCount: 0,
+      cartSubscription: null,
+    };
+  },
 
-    return {};
+  watch: {
+    // Start/restart liveQuery when the user logs in/out
+    "$store.state.userID"(newUserID) {
+      this.loadCartCount(newUserID);
+    },
+  },
+
+  mounted() {
+    this.loadCartCount(this.$store.state.userID);
+  },
+
+  beforeUnmount() {
+    this.stopCartSubscription();
   },
 
   methods: {
+    loadCartCount(userID) {
+      // Stop previous subscription
+      this.stopCartSubscription();
+
+      // No user logged in
+      if (!userID) {
+        this.cartCount = 0;
+        return;
+      }
+
+      // Start live query
+      this.cartSubscription = getCartCountLive(userID).subscribe({
+        next: (count) => {
+          console.log("Cart count:", count);
+          this.cartCount = count;
+        },
+
+        error: (error) => {
+          console.error("Cart count error:", error);
+        },
+      });
+    },
+
+    stopCartSubscription() {
+      if (this.cartSubscription) {
+        this.cartSubscription.unsubscribe();
+        this.cartSubscription = null;
+      }
+    },
+
     logout() {
       this.$store.commit("logout");
+
+      this.cartCount = 0;
 
       this.$router.push({ name: "login" });
     },
