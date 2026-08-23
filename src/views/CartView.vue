@@ -295,6 +295,7 @@ export default {
 
   methods: {
     orderRedirect() {
+      this.orderDialog = false;
       this.$router.push({ name: "orders" });
     },
     // Load the cart directly from IndexedDB

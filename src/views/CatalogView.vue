@@ -246,7 +246,7 @@
       <v-card-text>
         Are you sure you want to delete
         <strong class="text-red-darken-2">{{ productToDelete?.name }}</strong
-        >? This action cannot be undone.
+        >? <br />This action cannot be undone.
       </v-card-text>
 
       <v-card-actions>
@@ -280,7 +280,7 @@
         </v-btn>
 
         <v-btn color="primary" variant="text" @click="cartDialog = false">
-          Okay
+          Continue shopping
         </v-btn>
       </v-card-actions>
     </v-card>

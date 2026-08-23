@@ -64,6 +64,18 @@
           <v-card-subtitle class="mt-1">
             {{ formatDate(order.dateOfPurchase) }}
           </v-card-subtitle>
+
+          <v-spacer />
+
+          <template #append>
+            <v-btn
+              icon="mdi-trash-can-outline"
+              variant="text"
+              color="error"
+              size="large"
+              @click="removeOrder(order.id)"
+            />
+          </template>
         </v-card-item>
 
         <v-divider />
@@ -132,10 +144,32 @@
       </v-card>
     </div>
   </v-container>
+  <!--custom "are you sure?" dialog-->
+  <v-dialog v-model="deleteDialog" max-width="400">
+    <v-card>
+      <v-card-title class="text-h5"> Delete Order? </v-card-title>
+
+      <v-card-text>
+        Are you sure you want to delete
+        <strong class="text-red-darken-2">{{ "order " + orderToDelete }}</strong
+        >? <br />This action cannot be undone.
+      </v-card-text>
+
+      <v-card-actions>
+        <v-spacer></v-spacer>
+
+        <v-btn variant="text" @click="deleteDialog = false"> Cancel </v-btn>
+
+        <v-btn color="red" variant="text" @click="confirmDelete">
+          Delete
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script>
-import { getOrders } from "@/db/dbCommunicator.js";
+import { getOrders, deleteOrder } from "@/db/dbCommunicator.js";
 
 export default {
   name: "OrdersView",
@@ -144,6 +178,8 @@ export default {
     return {
       orders: [],
       loading: true,
+      deleteDialog: false,
+      orderToDelete: null,
     };
   },
 
@@ -184,6 +220,17 @@ export default {
 
     itemTotal(product) {
       return Number(product.price) * Number(product.amount);
+    },
+
+    async removeOrder(orderId) {
+      this.orderToDelete = orderId;
+      this.deleteDialog = true;
+    },
+
+    async confirmDelete() {
+      await deleteOrder(this.orderToDelete);
+      this.deleteDialog = false;
+      this.orders = await getOrders(this.userID);
     },
   },
 };
