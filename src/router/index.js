@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import CatalogView from "../views/CatalogView.vue";
 import LoginView from "../views/LoginView.vue";
 import ManageProductView from "../views/ManageProductView.vue";
+import CartView from "../views/CartView.vue";
 
 const routes = [
   {
@@ -18,6 +19,11 @@ const routes = [
     path: "/ManageProduct",
     name: "manage",
     component: ManageProductView,
+  },
+  {
+    path: "/cart",
+    name: "cart",
+    component: CartView,
   },
 ];
 

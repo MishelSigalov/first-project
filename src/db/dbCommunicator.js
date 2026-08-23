@@ -102,3 +102,57 @@ export async function doesProductExist(name) {
 
   return product;
 }
+
+export async function addProductToCart(productId, clientId) {
+  // Check if the user already has a cart
+  let cart = await db.orderDetails.where("clientId").equals(clientId).first();
+
+  // No cart → create one
+  if (!cart) {
+    const cartId = await db.orderDetails.add({
+      clientId,
+      products: [[productId, 1]],
+    });
+
+    return await db.orderDetails.get(cartId);
+  }
+
+  // Check if product already exists
+  const productIndex = cart.products.findIndex((item) => item[0] === productId);
+
+  if (productIndex !== -1) {
+    // Exists → increase amount
+    cart.products[productIndex][1]++;
+  } else {
+    // Doesn't exist → add it
+    cart.products.push([productId, 1]);
+  }
+
+  await db.orderDetails.put(cart);
+
+  return cart;
+}
+
+export async function removeProductFromCart(productId, clientId) {
+  const cart = await db.orderDetails.where("clientId").equals(clientId).first();
+
+  if (!cart) return null;
+
+  cart.products = cart.products.filter((item) => item[0] !== productId);
+
+  await db.orderDetails.put(cart);
+
+  return cart;
+}
+
+export async function clearCart(clientId) {
+  const cart = await db.orderDetails.where("clientId").equals(clientId).first();
+
+  if (!cart) return;
+
+  await db.orderDetails.delete(cart.id);
+}
+
+export async function getCart(clientId) {
+  return await db.orderDetails.where("clientId").equals(clientId).first();
+}

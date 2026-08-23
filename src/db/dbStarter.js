@@ -7,7 +7,7 @@ export const db = new Dexie("StoreDatabase");
 db.version(1).stores({
   products: "++id, name, category, price, stockAvailability, dateOfCreation",
   orders: "++id, clientId, dateOfPurchase, totalPrice",
-  orderDetails: "[orderId+productId], orderId, productId, amount, dateOfPurchase",
+  orderDetails: "++id, clientId",
   users: "++id, name, password, isAdmin"
 });
 

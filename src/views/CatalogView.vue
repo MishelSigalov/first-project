@@ -126,8 +126,17 @@
         <template v-slot:[`item.dateOfCreation`]="{ item }">
           {{ item.dateOfCreation?.split("-").reverse().join("/") }}
         </template>
-        <!--adding delete button-->
+        <!--adding edit, delete and add to cart buttons-->
         <template v-slot:[`item.actions`]="{ item }">
+          <v-btn
+            prepend-icon="mdi-cart-plus"
+            color="primary"
+            variant="text"
+            v-if="$store.state.userID"
+            @click="addToCart(item.id, item.name)"
+          >
+            Add to cart
+          </v-btn>
           <v-btn
             icon="mdi-pencil"
             color="primary"
@@ -139,6 +148,7 @@
             icon="mdi-delete"
             color="red"
             variant="text"
+            v-if="$store.state.isAdmin"
             @click="openDeleteDialog(item)"
           >
           </v-btn>
@@ -187,8 +197,17 @@
               </p>
             </v-card-text>
 
-            <!--Delete and edit button-->
+            <!--Delete, edit and add to cart buttons-->
             <v-card-actions>
+              <v-btn
+                prepend-icon="mdi-cart-plus"
+                color="primary"
+                variant="text"
+                v-if="$store.state.userID"
+                @click="addToCart(product.id, product.name)"
+              >
+                Add to cart
+              </v-btn>
               <v-btn
                 icon="mdi-pencil"
                 color="primary"
@@ -200,6 +219,7 @@
                 icon="mdi-delete"
                 color="red"
                 variant="text"
+                v-if="$store.state.isAdmin"
                 @click="openDeleteDialog(product)"
               >
               </v-btn>
@@ -209,7 +229,7 @@
       </v-row>
     </v-container>
   </v-container>
-  //custom "are you sure?" message
+  <!--custom "are you sure?" dialog-->
   <v-dialog v-model="deleteDialog" max-width="400">
     <v-card>
       <v-card-title class="text-h5"> Delete Product? </v-card-title>
@@ -227,6 +247,27 @@
 
         <v-btn color="red" variant="text" @click="confirmDelete">
           Delete
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+  <!--custom added to cart dialog-->
+  <v-dialog
+    v-model="cartDialog"
+    max-width="700"
+    @keyup.enter="cartDialog = false"
+  >
+    <v-card>
+      <v-card-title class="text-h2 font-weight-bold">
+        <strong class="text-primary">{{ productAddedToCart + " " }}</strong>
+        added to cart!
+      </v-card-title>
+
+      <v-card-actions>
+        <v-spacer></v-spacer>
+
+        <v-btn color="primary" variant="text" @click="cartDialog = false">
+          Okay
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -253,12 +294,14 @@ export default defineComponent({
       priceAscending: true,
       dateAscending: true,
       deleteDialog: false,
+      cartDialog: false,
       productToDelete: null,
       print: "",
       searchQuery: "",
       startDateInput: "",
       endDateInput: "",
       selectedCategory: null,
+      productAddedToCart: "",
       headers: [
         { title: "Product", align: "start", key: "name" },
         { title: "Category", align: "end", key: "category" },
@@ -299,6 +342,16 @@ export default defineComponent({
   },
 
   methods: {
+    async addToCart(productId, productName) {
+      this.productAddedToCart = productName;
+      this.cartDialog = true;
+
+      await this.$store.dispatch("addToCart", {
+        productId,
+        clientId: this.$store.state.userID,
+      });
+    },
+
     openDeleteDialog(product) {
       this.productToDelete = product;
       this.deleteDialog = true;

@@ -95,6 +95,7 @@ export default {
   methods: {
     async login() {
       const user = await getUser(this.username);
+      this.print = user.id;
       //check if there is an empry field
       if (!this.username) {
         this.errorMessage = "User cant be empty";
@@ -137,7 +138,7 @@ export default {
       }
 
       //all tests passed
-      this.$store.commit("setUser", user);
+      await this.$store.dispatch("login", user);
 
       this.$router.push({ name: "catalog" });
     },

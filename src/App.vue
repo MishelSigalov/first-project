@@ -4,19 +4,7 @@
       <v-toolbar class="my-toolbar" color="primary" dark>
         <v-toolbar-title class="text-black"> Mishel's Shop </v-toolbar-title>
 
-        <v-spacer></v-spacer>
-
         <v-btn rounded text :to="{ name: 'catalog' }"> Products </v-btn>
-
-        <v-btn
-          v-if="!$store.state.username"
-          rounded
-          text
-          :to="{ name: 'login' }"
-        >
-          Login
-        </v-btn>
-
         <v-btn
           v-if="$store.state.isAdmin"
           rounded
@@ -26,6 +14,24 @@
           Product Management
         </v-btn>
 
+        <v-spacer></v-spacer>
+        <v-btn
+          v-if="!$store.state.username"
+          rounded
+          text
+          :to="{ name: 'login' }"
+        >
+          Login
+        </v-btn>
+
+        <!--cart-->
+        <v-btn icon :to="{ name: 'cart' }">
+          <v-badge :content="$store.getters.cartCount" color="red" floating>
+            <v-icon>mdi-cart</v-icon>
+          </v-badge>
+        </v-btn>
+
+        <!--username and logout-->
         <v-chip
           v-if="$store.state.username"
           class="ml-3 mr-4"
@@ -54,8 +60,23 @@
 </template>
 
 <script>
+import { onMounted } from "vue";
+import { useStore } from "vuex";
+
 export default {
   name: "App",
+  setup() {
+    const store = useStore();
+
+    onMounted(async () => {
+      if (store.state.userID) {
+        await store.dispatch("loadCart", store.state.userID);
+      }
+    });
+
+    return {};
+  },
+
   methods: {
     logout() {
       this.$store.commit("logout");
