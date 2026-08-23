@@ -1,11 +1,13 @@
 <template>
-  <v-container v-if="userID" max-width="1000">
+  <v-container v-if="userID" max-width="1100">
     <!-- Header -->
     <div class="d-flex align-center justify-space-between mb-8">
       <div>
         <h1 class="text-h3 font-weight-bold">Your Cart</h1>
+
         <p class="text-medium-emphasis mt-2">
-          {{ cartCount }} {{ cartCount === 1 ? "item" : "items" }}
+          {{ cartCount }}
+          {{ cartCount === 1 ? "item" : "items" }}
         </p>
       </div>
 
@@ -20,7 +22,7 @@
       </v-btn>
     </div>
 
-    <!-- Empty cart -->
+    <!-- Empty Cart -->
     <v-card
       v-if="cartItems.length === 0"
       class="pa-12 text-center"
@@ -47,123 +49,144 @@
     </v-card>
 
     <!-- Cart -->
-    <div v-else>
-      <v-row>
-        <!-- Products -->
-        <v-col cols="12" md="8">
-          <v-card
-            v-for="item in cartItems"
-            :key="item[0]"
-            class="mb-4"
-            rounded="xl"
-            elevation="2"
-          >
-            <v-card-text class="pa-5">
-              <div class="d-flex align-center">
-                <!-- Product image 
-                <v-avatar size="100" rounded="lg" class="mr-5">
-                  <v-img :src="getProduct(item[0])?.image" cover>
-                    <template #error>
-                      <v-icon size="40"> mdi-image-outline </v-icon>
-                    </template>
-                  </v-img>
-                </v-avatar>-->
-
-                <!-- Product information -->
-                <div class="flex-grow-1">
-                  <h2 class="text-h6 font-weight-bold">
+    <v-row v-else align="start">
+      <!-- PRODUCTS -->
+      <v-col cols="12" md="8">
+        <!-- Product Card -->
+        <v-card
+          v-for="item in cartItems"
+          :key="item[0]"
+          class="mb-4"
+          rounded="xl"
+          elevation="2"
+        >
+          <v-card-text class="pa-5">
+            <v-row align="center">
+              <!-- Product Information -->
+              <v-col cols="12" sm="5">
+                <div>
+                  <div class="text-h6 font-weight-bold text-primary">
                     {{ getProduct(item[0])?.name || "Loading..." }}
-                  </h2>
+                  </div>
 
-                  <p class="text-body-2 text-medium-emphasis mt-1">
-                    ${{ getProduct(item[0])?.price }}
-                  </p>
-
-                  <!-- Quantity -->
-                  <div class="d-flex align-center mt-4">
-                    <v-btn
-                      icon="mdi-minus"
-                      size="small"
-                      variant="outlined"
-                      @click="decreaseQuantity(item[0])"
-                    />
-
-                    <span class="mx-4 font-weight-bold">
-                      {{ item[1] }}
-                    </span>
-
-                    <v-btn
-                      icon="mdi-plus"
-                      size="small"
-                      variant="outlined"
-                      @click="increaseQuantity(item[0])"
-                    />
+                  <div class="text-body-2 text-medium-emphasis mt-1">
+                    $
+                    {{ getProduct(item[0])?.price?.toFixed(2) || "0.00" }}
+                    each
                   </div>
                 </div>
+              </v-col>
 
-                <!-- Price + delete -->
-                <div class="text-right">
-                  <div class="text-h6 font-weight-bold">
-                    ${{ (getProduct(item[0])?.price * item[1]).toFixed(2) }}
+              <!-- Quantity -->
+              <v-col cols="12" sm="4">
+                <div class="d-flex align-center justify-center">
+                  <v-btn
+                    icon="mdi-minus"
+                    size="small"
+                    variant="outlined"
+                    @click="decreaseQuantity(item[0])"
+                  />
+
+                  <span
+                    class="mx-5 text-h6 font-weight-bold"
+                    style="min-width: 25px; text-align: center"
+                  >
+                    {{ item[1] }}
+                  </span>
+
+                  <v-btn
+                    icon="mdi-plus"
+                    size="small"
+                    variant="outlined"
+                    @click="increaseQuantity(item[0])"
+                  />
+                </div>
+              </v-col>
+
+              <!-- Price + Delete -->
+              <v-col cols="12" sm="3">
+                <div class="d-flex align-center justify-end">
+                  <div class="text-h6 font-weight-bold mr-3">
+                    $
+                    {{
+                      ((getProduct(item[0])?.price || 0) * item[1]).toFixed(2)
+                    }}
                   </div>
 
                   <v-btn
                     icon="mdi-trash-can-outline"
                     variant="text"
                     color="error"
-                    class="mt-3"
                     @click="removeItem(item[0])"
                   />
                 </div>
-              </div>
-            </v-card-text>
-          </v-card>
-        </v-col>
+              </v-col>
+            </v-row>
+          </v-card-text>
+        </v-card>
+      </v-col>
 
-        <!-- Summary -->
-        <v-col cols="12" md="4">
-          <v-card rounded="xl" elevation="3" class="pa-6">
-            <h2 class="text-h5 font-weight-bold mb-6">Order Summary</h2>
+      <!-- ORDER SUMMARY -->
+      <v-col cols="12" md="4">
+        <v-card
+          rounded="xl"
+          elevation="3"
+          class="pa-6"
+          style="position: sticky; top: 20px"
+        >
+          <h2 class="text-h5 font-weight-bold mb-6">Order Summary</h2>
 
-            <div class="d-flex justify-space-between mb-3">
-              <span class="text-medium-emphasis"> Subtotal </span>
+          <!-- Items -->
+          <div class="d-flex justify-space-between mb-3">
+            <span class="text-medium-emphasis"> Items </span>
 
-              <span> ${{ subtotal.toFixed(2) }} </span>
-            </div>
+            <span>
+              {{ cartCount }}
+            </span>
+          </div>
 
-            <div class="d-flex justify-space-between mb-4">
-              <span class="text-medium-emphasis"> Shipping </span>
+          <!-- Subtotal -->
+          <div class="d-flex justify-space-between mb-3">
+            <span class="text-medium-emphasis"> Subtotal </span>
 
-              <span class="text-success"> Free </span>
-            </div>
+            <span> ${{ subtotal.toFixed(2) }} </span>
+          </div>
 
-            <v-divider class="mb-4" />
+          <!-- Shipping -->
+          <div class="d-flex justify-space-between mb-4">
+            <span class="text-medium-emphasis"> Shipping </span>
 
-            <div class="d-flex justify-space-between mb-6">
-              <span class="text-h6 font-weight-bold"> Total </span>
+            <span class="text-success"> Free </span>
+          </div>
 
-              <span class="text-h6 font-weight-bold">
-                ${{ subtotal.toFixed(2) }}
-              </span>
-            </div>
+          <v-divider class="mb-4" />
 
-            <v-btn
-              block
-              color="primary"
-              size="large"
-              rounded="lg"
-              prepend-icon="mdi-credit-card-outline"
-              @click="checkout"
-            >
-              Checkout
-            </v-btn>
-          </v-card>
-        </v-col>
-      </v-row>
-    </div>
+          <!-- Total -->
+          <div class="d-flex justify-space-between mb-6">
+            <span class="text-h6 font-weight-bold"> Total </span>
+
+            <span class="text-h6 font-weight-bold">
+              ${{ subtotal.toFixed(2) }}
+            </span>
+          </div>
+
+          <!-- Checkout -->
+          <v-btn
+            block
+            color="primary"
+            size="large"
+            rounded="lg"
+            prepend-icon="mdi-credit-card-outline"
+            @click="checkout"
+          >
+            Checkout
+          </v-btn>
+        </v-card>
+      </v-col>
+    </v-row>
   </v-container>
 
-  <!-- Not logged in -->
+  <!-- NOT LOGGED IN -->
   <v-container v-else class="fill-height d-flex align-center justify-center">
     <v-card
       class="pa-10 text-center"
@@ -187,35 +210,53 @@
 </template>
 
 <script>
-import { getProductById, getCart, addOrder } from "@/db/dbCommunicator.js";
+import {
+  getProductById,
+  getCart,
+  addProductToCart,
+  removeProductFromCart,
+  decreaseQuantity as decreaseQuantityDB,
+  clearCart as clearCartDB,
+  addOrder,
+} from "@/db/dbCommunicator.js";
 
 export default {
   name: "CartView",
 
   data() {
     return {
+      // The user's cart from IndexedDB
+      cart: null,
+
+      // Products indexed by their ID
       products: {},
     };
   },
 
   computed: {
+    // Logged-in user ID
     userID() {
       return this.$store.state.userID;
     },
 
+    // Products inside the cart
     cartItems() {
-      return this.$store.state.cartItems;
+      return this.cart?.products || [];
     },
 
+    // Total amount of products
     cartCount() {
       return this.cartItems.reduce((total, item) => total + item[1], 0);
     },
 
+    // Total price
     subtotal() {
       return this.cartItems.reduce((total, item) => {
         const product = this.products[item[0]];
 
-        if (!product) return total;
+        if (!product) {
+          return total;
+        }
 
         return total + product.price * item[1];
       }, 0);
@@ -223,76 +264,87 @@ export default {
   },
 
   async mounted() {
-    await this.loadProducts();
+    if (this.userID) {
+      await this.loadCart();
+    }
   },
 
   methods: {
+    // Load the cart directly from IndexedDB
+    async loadCart() {
+      this.cart = await getCart(this.userID);
+
+      this.products = {};
+
+      if (!this.cart) {
+        return;
+      }
+
+      await this.loadProducts();
+    },
+
+    // Load product information for every product in the cart
     async loadProducts() {
       for (const item of this.cartItems) {
         const productId = item[0];
 
-        if (!this.products[productId]) {
-          const product = await getProductById(productId);
+        const product = await getProductById(productId);
 
-          if (product) {
-            this.products[productId] = product;
-          }
+        if (product) {
+          this.products[productId] = product;
         }
       }
     },
 
+    // Get product by ID
     getProduct(productId) {
       return this.products[productId];
     },
 
+    // Remove an entire product
     async removeItem(productId) {
-      await this.$store.dispatch("removeFromCart", {
-        productId,
-        clientId: this.userID,
-      });
+      await removeProductFromCart(productId, this.userID);
 
-      delete this.products[productId];
+      await this.loadCart();
     },
 
+    // Increase quantity
     async increaseQuantity(productId) {
-      await this.$store.dispatch("addToCart", {
-        productId,
-        clientId: this.userID,
-      });
+      await addProductToCart(productId, this.userID);
+
+      await this.loadCart();
     },
 
+    // Decrease quantity
     async decreaseQuantity(productId) {
-      const item = this.cartItems.find((item) => item[0] === productId);
+      await decreaseQuantityDB(productId, this.userID);
 
-      if (!item) return;
-
-      if (item[1] === 1) {
-        await this.removeItem(productId);
-        return;
-      }
-
-      await this.$store.dispatch("decreaseQuantity", {
-        productId,
-        clientId: this.userID,
-      });
+      await this.loadCart();
     },
 
+    // Delete entire cart
     async clearCart() {
-      await this.$store.dispatch("clearCart", this.userID);
+      await clearCartDB(this.userID);
 
+      this.cart = null;
       this.products = {};
     },
 
+    // Checkout
     async checkout() {
-      const cart = await getCart(this.userID);
-
-      if (!cart) {
-        console.error("Cart not found");
+      if (!this.cart) {
         return;
       }
 
-      await addOrder(cart.id, this.userID, this.subtotal);
-      this.clearCart();
+      try {
+        await addOrder(this.cart.id, this.userID, this.subtotal);
+
+        // Cart is deleted by addOrder()
+        this.cart = null;
+        this.products = {};
+      } catch (error) {
+        console.error("Checkout failed:", error);
+      }
     },
   },
 };
