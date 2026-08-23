@@ -1,33 +1,32 @@
 <template>
-  <v-container>
-    <!-- ==================== LIST / GRID SWITCH ==================== -->
-    <v-row>
-      <v-col>
-        <h1>{{ print }}</h1>
+  <v-container max-width="1300">
+    <!-- ====================================================== -->
+    <!-- HEADER / LIST-GRID SWITCH -->
+    <!-- ====================================================== -->
 
-        <v-card
-          class="pa-2 mb-4"
-          color="transparent"
-          rounded="md"
-          elevation="1"
-        >
-          <v-btn-group
-            width="auto"
-            variant="outlined"
-            density="comfortable"
-            class="d-inline-flex"
-          >
+    <v-row align="center" class="mb-6">
+      <v-col>
+        <div>
+          <h1 class="text-h3 font-weight-bold">Product Catalog</h1>
+
+          <p class="text-body-1 text-medium-emphasis mt-2">
+            Browse, search and manage your products
+          </p>
+        </div>
+      </v-col>
+
+      <v-col cols="auto">
+        <v-card class="pa-1" rounded="lg" elevation="2">
+          <v-btn-group variant="text" density="comfortable">
             <v-btn
               icon="mdi-format-list-bulleted"
-              color="primary"
-              size="default"
+              :color="currentView === 0 ? 'primary' : undefined"
               @click="handleList"
             />
 
             <v-btn
               icon="mdi-view-grid"
-              color="error"
-              size="default"
+              :color="currentView === 1 ? 'error' : undefined"
               @click="handleGrid"
             />
           </v-btn-group>
@@ -35,138 +34,162 @@
       </v-col>
     </v-row>
 
-    <!-- ==================== SEARCH / FILTER ==================== -->
-    <v-row>
-      <v-card class="pa-5 mb-6 w-100" elevation="2" rounded="xl">
-        <!-- Search -->
-        <v-row>
-          <v-col cols="12">
-            <v-text-field
-              v-model="searchQuery"
-              label="Search Products"
-              prepend-inner-icon="mdi-magnify"
-              density="comfortable"
-              variant="outlined"
-              clearable
-              hide-details
-              @input="filterProducts()"
-              @click:clear="filterProducts()"
-            />
-          </v-col>
-        </v-row>
+    <!-- ====================================================== -->
+    <!-- SEARCH / FILTERS -->
+    <!-- ====================================================== -->
+
+    <v-card class="pa-6 mb-6" rounded="xl" elevation="3">
+      <div class="d-flex align-center mb-5">
+        <v-avatar color="primary" size="42" class="mr-3">
+          <v-icon color="white"> mdi-filter-variant </v-icon>
+        </v-avatar>
+
+        <div>
+          <div class="text-h6 font-weight-bold">Find Products</div>
+
+          <div class="text-body-2 text-medium-emphasis">
+            Search and filter the catalog
+          </div>
+        </div>
+      </div>
+
+      <!-- Search -->
+      <v-row>
+        <v-col cols="12" md="6">
+          <v-text-field
+            v-model="searchQuery"
+            label="Search Products"
+            placeholder="Search by product name..."
+            prepend-inner-icon="mdi-magnify"
+            density="comfortable"
+            variant="outlined"
+            clearable
+            hide-details
+            @input="filterProducts()"
+            @click:clear="filterProducts()"
+          />
+        </v-col>
 
         <!-- Category -->
-        <v-row>
-          <v-col cols="12" sm="6">
-            <v-select
-              v-model="selectedCategory"
-              :items="categories"
-              label="Category"
-              prepend-inner-icon="mdi-shape-outline"
-              density="comfortable"
-              variant="outlined"
-              clearable
-              @update:model-value="filterProducts()"
-              @click:clear="filterProducts()"
-            />
-          </v-col>
-        </v-row>
+        <v-col cols="12" md="6">
+          <v-select
+            v-model="selectedCategory"
+            :items="categories"
+            label="Category"
+            prepend-inner-icon="mdi-shape-outline"
+            density="comfortable"
+            variant="outlined"
+            clearable
+            @update:model-value="filterProducts()"
+            @click:clear="filterProducts()"
+          />
+        </v-col>
+      </v-row>
 
-        <!-- Date -->
-        <v-row align="center">
-          <v-col cols="12" sm="5">
-            <v-text-field
-              v-model="startDateInput"
-              label="Start Date (DD/MM/YYYY)"
-              placeholder="DD/MM/YYYY"
-              prepend-inner-icon="mdi-calendar-start"
-              density="comfortable"
-              variant="outlined"
-              :rules="[validateDateRule]"
-              maxlength="10"
-              hide-details="auto"
-              clearable
-              @input="startDateInput = formatDate(startDateInput)"
-            />
-          </v-col>
+      <!-- Dates -->
+      <v-row align="center">
+        <v-col cols="12" md="4">
+          <v-text-field
+            v-model="startDateInput"
+            label="Start Date"
+            placeholder="DD/MM/YYYY"
+            prepend-inner-icon="mdi-calendar-start"
+            density="comfortable"
+            variant="outlined"
+            :rules="[validateDateRule]"
+            maxlength="10"
+            hide-details="auto"
+            clearable
+            @input="startDateInput = formatDate(startDateInput)"
+          />
+        </v-col>
 
-          <v-col cols="12" sm="5">
-            <v-text-field
-              v-model="endDateInput"
-              label="End Date (DD/MM/YYYY)"
-              placeholder="DD/MM/YYYY"
-              prepend-inner-icon="mdi-calendar-end"
-              density="comfortable"
-              variant="outlined"
-              :rules="[validateDateRule]"
-              maxlength="10"
-              hide-details="auto"
-              clearable
-              @input="endDateInput = formatDate(endDateInput)"
-            />
-          </v-col>
+        <v-col cols="12" md="4">
+          <v-text-field
+            v-model="endDateInput"
+            label="End Date"
+            placeholder="DD/MM/YYYY"
+            prepend-inner-icon="mdi-calendar-end"
+            density="comfortable"
+            variant="outlined"
+            :rules="[validateDateRule]"
+            maxlength="10"
+            hide-details="auto"
+            clearable
+            @input="endDateInput = formatDate(endDateInput)"
+          />
+        </v-col>
 
-          <v-col cols="12" sm="2">
-            <v-btn
-              color="primary"
-              block
-              size="large"
-              rounded="lg"
-              @click="filterProducts"
-            >
-              Search
-            </v-btn>
-          </v-col>
-        </v-row>
-      </v-card>
-    </v-row>
+        <v-col cols="12" md="4">
+          <v-btn
+            block
+            color="primary"
+            size="large"
+            rounded="lg"
+            prepend-icon="mdi-magnify"
+            @click="filterProducts"
+          >
+            Search Products
+          </v-btn>
+        </v-col>
+      </v-row>
+    </v-card>
 
-    <!-- ==================== ADD PRODUCT ==================== -->
-    <v-row class="mb-4">
+    <!-- ====================================================== -->
+    <!-- ADD PRODUCT -->
+    <!-- ====================================================== -->
+
+    <div v-if="$store.state.isAdmin" class="d-flex justify-end mb-5">
       <v-btn
-        v-if="$store.state.isAdmin"
         color="primary"
-        prepend-icon="mdi-plus-box"
         size="large"
         rounded="lg"
+        elevation="2"
+        prepend-icon="mdi-plus-box"
         @click="addProduct"
       >
         Add Product
       </v-btn>
-    </v-row>
+    </div>
 
-    <!-- ========================================================= -->
+    <!-- ====================================================== -->
     <!-- LIST VIEW -->
-    <!-- ========================================================= -->
+    <!-- ====================================================== -->
 
-    <v-container v-if="currentView == 0">
+    <v-container v-if="currentView == 0" class="pa-0">
       <v-data-table-virtual
         :headers="headers"
         :items="products"
-        height="500"
+        height="550"
         item-value="name"
         fixed-header
-        class="elevation-2 rounded-xl"
+        class="elevation-3 rounded-xl"
       >
-        <!-- Image -->
+        <!-- IMAGE -->
         <template v-slot:[`item.image`]="{ item }">
           <v-avatar size="64" rounded="lg" class="my-2 bg-grey-lighten-4">
             <v-img :src="item.image" alt="Product image" cover>
               <template #error>
-                <v-icon size="32" color="grey"> mdi-image-off </v-icon>
+                <div class="d-flex align-center justify-center fill-height">
+                  <v-icon size="32" color="grey"> mdi-image-off </v-icon>
+                </div>
               </template>
             </v-img>
           </v-avatar>
         </template>
 
-        <!-- Name -->
+        <!-- PRODUCT NAME -->
         <template v-slot:[`item.name`]="{ item }">
-          <span class="text-primary font-weight-bold text-body-1">
+          <div class="font-weight-bold text-primary">
             {{ item.name }}
-          </span>
+          </div>
+
+          <div class="text-caption text-medium-emphasis">
+            Product #{{ item.id }}
+          </div>
         </template>
 
-        <!-- Category -->
+        <!-- CATEGORY -->
         <template v-slot:[`item.category`]="{ item }">
           <v-chip
             size="small"
@@ -178,49 +201,62 @@
           </v-chip>
         </template>
 
-        <!-- Date -->
+        <!-- DATE -->
         <template v-slot:[`item.dateOfCreation`]="{ item }">
-          {{ item.dateOfCreation?.split("-").reverse().join("/") }}
+          <span class="text-body-2">
+            {{ item.dateOfCreation?.split("-").reverse().join("/") }}
+          </span>
         </template>
 
-        <!-- Price -->
+        <!-- PRICE -->
         <template v-slot:[`item.price`]="{ item }">
           <span class="font-weight-bold">
             ${{ Number(item.price).toFixed(2) }}
           </span>
         </template>
 
+        <!-- ================================================= -->
         <!-- STOCK -->
+        <!-- ================================================= -->
+
         <template v-slot:[`item.stockAvailability`]="{ item }">
+          <!-- In Stock -->
           <v-chip
+            v-if="item.stockAvailability > 0"
             size="small"
+            color="success"
             variant="tonal"
-            :color="item.stockAvailability > 0 ? 'success' : 'error'"
-            :prepend-icon="
-              item.stockAvailability > 0
-                ? 'mdi-check-circle'
-                : 'mdi-alert-circle'
-            "
+            prepend-icon="mdi-check-circle"
           >
-            {{
-              item.stockAvailability > 0
-                ? item.stockAvailability + " in stock"
-                : "Out of Stock"
-            }}
+            {{ item.stockAvailability }} in stock
+          </v-chip>
+
+          <!-- Out Of Stock -->
+          <v-chip
+            v-else
+            size="small"
+            color="error"
+            variant="tonal"
+            prepend-icon="mdi-alert-circle"
+          >
+            Out of Stock
           </v-chip>
         </template>
 
-        <!-- Actions -->
+        <!-- ================================================= -->
+        <!-- ACTIONS -->
+        <!-- ================================================= -->
+
         <template v-slot:[`item.actions`]="{ item }">
           <div class="d-flex align-center ga-1">
-            <!-- Add to cart -->
+            <!-- Add To Cart -->
             <v-btn
               v-if="$store.state.userID"
-              prepend-icon="mdi-cart-plus"
               color="primary"
               variant="tonal"
               size="small"
               rounded="lg"
+              prepend-icon="mdi-cart-plus"
               :disabled="item.stockAvailability <= 0"
               @click="addToCart(item)"
             >
@@ -241,7 +277,7 @@
             <v-btn
               v-if="$store.state.isAdmin"
               icon="mdi-delete"
-              color="red"
+              color="error"
               variant="text"
               size="small"
               @click="openDeleteDialog(item)"
@@ -251,17 +287,18 @@
       </v-data-table-virtual>
     </v-container>
 
-    <!-- ========================================================= -->
+    <!-- ====================================================== -->
     <!-- GRID VIEW -->
-    <!-- ========================================================= -->
+    <!-- ====================================================== -->
 
-    <v-container v-if="currentView == 1">
-      <!-- Sorting -->
-      <v-row class="mb-5 ga-2">
+    <v-container v-if="currentView == 1" class="pa-0">
+      <!-- SORTING -->
+      <div class="d-flex ga-3 mb-6">
         <v-btn
           color="primary"
           variant="tonal"
           rounded="lg"
+          prepend-icon="mdi-currency-usd"
           @click="sortByPrice"
         >
           Price
@@ -271,16 +308,22 @@
           </v-icon>
         </v-btn>
 
-        <v-btn color="primary" variant="tonal" rounded="lg" @click="sortByDate">
+        <v-btn
+          color="primary"
+          variant="tonal"
+          rounded="lg"
+          prepend-icon="mdi-calendar"
+          @click="sortByDate"
+        >
           Date
 
           <v-icon class="ml-2">
             {{ dateAscending ? "mdi-arrow-up" : "mdi-arrow-down" }}
           </v-icon>
         </v-btn>
-      </v-row>
+      </div>
 
-      <!-- Products -->
+      <!-- PRODUCTS -->
       <v-row>
         <v-col
           v-for="product in products"
@@ -290,83 +333,124 @@
           md="4"
         >
           <v-card
-            class="pa-4 h-100"
-            variant="outlined"
+            class="h-100 d-flex flex-column"
             rounded="xl"
-            elevation="2"
+            elevation="3"
+            variant="outlined"
           >
-            <!-- Product image -->
-            <v-img
-              :src="product.image"
-              height="300"
-              cover
-              class="mb-4 rounded-lg"
-            >
-              <template #error>
-                <div class="d-flex align-center justify-center fill-height">
-                  <v-icon size="64" color="grey"> mdi-image-off </v-icon>
-                </div>
-              </template>
-            </v-img>
+            <!-- PRODUCT IMAGE -->
 
-            <!-- Name -->
-            <v-card-title class="text-primary font-weight-bold px-0">
-              {{ product.name }}
-            </v-card-title>
+            <div class="position-relative">
+              <v-img
+                :src="product.image"
+                height="280"
+                cover
+                class="rounded-t-xl"
+              >
+                <template #error>
+                  <div class="d-flex align-center justify-center fill-height">
+                    <v-icon size="64" color="grey"> mdi-image-off </v-icon>
+                  </div>
+                </template>
+              </v-img>
 
-            <!-- Category -->
-            <v-card-subtitle class="px-0 text-capitalize">
-              Category:
-              {{ product.category?.replace(/_/g, " ") }}
-            </v-card-subtitle>
+              <!-- OUT OF STOCK OVERLAY -->
 
-            <!-- Description -->
-            <v-card-subtitle class="px-0 mt-2">
-              {{ product.description }}
-            </v-card-subtitle>
+              <div
+                v-if="product.stockAvailability <= 0"
+                class="position-absolute top-0 left-0 right-0 bottom-0 d-flex align-center justify-center"
+                style="background: rgba(0, 0, 0, 0.45)"
+              >
+                <v-chip
+                  color="error"
+                  size="large"
+                  variant="flat"
+                  prepend-icon="mdi-alert-circle"
+                  class="font-weight-bold"
+                >
+                  OUT OF STOCK
+                </v-chip>
+              </div>
+            </div>
 
-            <v-card-text class="px-0">
+            <!-- PRODUCT CONTENT -->
+
+            <v-card-text class="pa-5 flex-grow-1">
+              <!-- Name -->
+              <div class="text-h5 font-weight-bold text-primary mb-2">
+                {{ product.name }}
+              </div>
+
+              <!-- Category -->
+              <v-chip
+                size="small"
+                color="primary"
+                variant="tonal"
+                class="text-capitalize mb-4"
+              >
+                {{ product.category?.replace(/_/g, " ") }}
+              </v-chip>
+
+              <!-- Description -->
+              <div class="text-body-2 text-medium-emphasis mb-5">
+                {{ product.description }}
+              </div>
+
               <!-- Price -->
-              <div class="text-h5 font-weight-bold mb-3">
+              <div class="text-h5 font-weight-bold mb-4">
                 ${{ Number(product.price).toFixed(2) }}
               </div>
 
               <!-- STOCK -->
-              <div class="mb-3">
+
+              <div class="mb-4">
+                <!-- Available -->
                 <v-chip
-                  size="small"
+                  v-if="product.stockAvailability > 0"
+                  color="success"
                   variant="tonal"
-                  :color="product.stockAvailability > 0 ? 'success' : 'error'"
-                  :prepend-icon="
-                    product.stockAvailability > 0
-                      ? 'mdi-check-circle'
-                      : 'mdi-alert-circle'
-                  "
+                  size="small"
+                  prepend-icon="mdi-check-circle"
                 >
-                  {{
-                    product.stockAvailability > 0
-                      ? product.stockAvailability + " in stock"
-                      : "Out of Stock"
-                  }}
+                  {{ product.stockAvailability }} in stock
+                </v-chip>
+
+                <!-- Empty -->
+                <v-chip
+                  v-else
+                  color="error"
+                  variant="tonal"
+                  size="small"
+                  prepend-icon="mdi-alert-circle"
+                >
+                  Out of Stock
                 </v-chip>
               </div>
 
               <!-- Date -->
               <div class="text-body-2 text-medium-emphasis">
-                <strong>Date Added:</strong>
+                <v-icon size="18" class="mr-1"> mdi-calendar-outline </v-icon>
+
+                Added:
                 {{ product.dateOfCreation.split("-").reverse().join("/") }}
               </div>
             </v-card-text>
 
-            <!-- Actions -->
-            <v-card-actions class="px-0">
-              <!-- Add to cart -->
+            <!-- ================================================= -->
+            <!-- CARD ACTIONS -->
+            <!-- ================================================= -->
+
+            <v-divider />
+
+            <v-card-actions class="pa-4">
+              <!-- Add Cart -->
+
               <v-btn
-                prepend-icon="mdi-cart-plus"
+                v-if="$store.state.userID"
                 color="primary"
                 variant="tonal"
                 rounded="lg"
-                v-if="$store.state.userID"
+                prepend-icon="mdi-cart-plus"
                 :disabled="product.stockAvailability <= 0"
                 @click="addToCart(product)"
               >
@@ -378,20 +462,22 @@
               <v-spacer />
 
               <!-- Edit -->
+
               <v-btn
+                v-if="$store.state.isAdmin"
                 icon="mdi-pencil"
                 color="primary"
                 variant="text"
-                v-if="$store.state.isAdmin"
                 @click="editProduct(product.id)"
               />
 
               <!-- Delete -->
+
               <v-btn
-                icon="mdi-delete"
-                color="red"
-                variant="text"
                 v-if="$store.state.isAdmin"
+                icon="mdi-delete"
+                color="error"
+                variant="text"
                 @click="openDeleteDialog(product)"
               />
             </v-card-actions>
@@ -399,155 +485,172 @@
         </v-col>
       </v-row>
     </v-container>
-  </v-container>
 
-  <!-- ========================================================= -->
-  <!-- DELETE DIALOG -->
-  <!-- ========================================================= -->
+    <!-- ====================================================== -->
+    <!-- DELETE PRODUCT DIALOG -->
+    <!-- ====================================================== -->
 
-  <v-dialog v-model="deleteDialog" max-width="500">
-    <v-card rounded="xl" elevation="8">
-      <v-card-title class="pa-6 pb-3">
-        <div class="d-flex align-center">
-          <v-avatar color="error" size="48" class="mr-4">
-            <v-icon color="white" size="26"> mdi-trash-can-outline </v-icon>
-          </v-avatar>
+    <v-dialog v-model="deleteDialog" max-width="500">
+      <v-card rounded="xl" elevation="8">
+        <!-- Header -->
 
-          <div>
-            <div class="text-h5 font-weight-bold">Delete Product?</div>
-
-            <div class="text-body-2 text-medium-emphasis mt-1">
-              This action cannot be undone
-            </div>
-          </div>
-        </div>
-      </v-card-title>
-
-      <v-divider />
-
-      <v-card-text class="pa-6">
-        <v-card variant="tonal" color="error" rounded="lg" class="pa-4">
+        <v-card-title class="pa-6 pb-3">
           <div class="d-flex align-center">
-            <v-icon color="error" size="28" class="mr-3">
-              mdi-alert-outline
-            </v-icon>
-
-            <div class="text-body-1">
-              Are you sure you want to delete
-              <strong class="text-error">
-                {{ productToDelete?.name }}
-              </strong>
-              ?
-            </div>
-          </div>
-        </v-card>
-      </v-card-text>
-
-      <v-divider />
-
-      <v-card-actions class="pa-5">
-        <v-spacer />
-
-        <v-btn variant="text" @click="deleteDialog = false"> Cancel </v-btn>
-
-        <v-btn
-          color="error"
-          variant="flat"
-          rounded="lg"
-          prepend-icon="mdi-trash-can-outline"
-          @click="confirmDelete"
-        >
-          Delete
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
-
-  <!-- ========================================================= -->
-  <!-- ADDED TO CART DIALOG -->
-  <!-- ========================================================= -->
-
-  <v-dialog
-    v-model="cartDialog"
-    max-width="600"
-    @keyup.enter="cartDialog = false"
-    @keydown.tab="cartDialog = false"
-  >
-    <v-card rounded="xl" elevation="8">
-      <!-- Header -->
-      <v-card-title class="pa-6 pb-3">
-        <div class="d-flex align-center">
-          <v-avatar color="success" size="48" class="mr-4">
-            <v-icon color="white" size="28"> mdi-cart-check </v-icon>
-          </v-avatar>
-
-          <div>
-            <div class="text-h5 font-weight-bold">Added to Cart</div>
-
-            <div class="text-body-2 text-medium-emphasis mt-1">
-              Your item has been added successfully
-            </div>
-          </div>
-        </div>
-      </v-card-title>
-
-      <v-divider />
-
-      <!-- Product -->
-      <v-card-text class="pa-6">
-        <v-card variant="tonal" rounded="xl" class="pa-4">
-          <div class="d-flex align-center">
-            <!-- Image -->
-            <v-avatar size="110" rounded="lg" class="mr-5 bg-grey-lighten-4">
-              <v-img :src="productAddedToCart.image" alt="Product image" cover>
-                <template #error>
-                  <div class="d-flex align-center justify-center fill-height">
-                    <v-icon size="45" color="grey"> mdi-image-off </v-icon>
-                  </div>
-                </template>
-              </v-img>
+            <v-avatar color="error" size="50" class="mr-4">
+              <v-icon color="white" size="27"> mdi-trash-can-outline </v-icon>
             </v-avatar>
 
-            <!-- Product details -->
-            <div class="flex-grow-1">
-              <div class="text-h6 font-weight-bold text-primary">
-                {{ productAddedToCart.name }}
-              </div>
+            <div>
+              <div class="text-h5 font-weight-bold">Delete Product?</div>
 
-              <div class="text-body-2 text-medium-emphasis mt-2">
-                Added successfully to your shopping cart
-              </div>
-
-              <div class="text-h6 font-weight-bold mt-3">
-                ${{ Number(productAddedToCart.price).toFixed(2) }}
+              <div class="text-body-2 text-medium-emphasis mt-1">
+                This action cannot be undone
               </div>
             </div>
           </div>
-        </v-card>
-      </v-card-text>
+        </v-card-title>
 
-      <v-divider />
+        <v-divider />
 
-      <!-- Actions -->
-      <v-card-actions class="pa-5">
-        <v-spacer />
+        <!-- Content -->
 
-        <v-btn color="primary" variant="text" @click="cartDialog = false">
-          Continue Shopping
-        </v-btn>
+        <v-card-text class="pa-6">
+          <v-card variant="tonal" color="error" rounded="lg" class="pa-4">
+            <div class="d-flex align-center">
+              <v-icon color="error" size="28" class="mr-3">
+                mdi-alert-outline
+              </v-icon>
 
-        <v-btn
-          color="primary"
-          variant="flat"
-          rounded="lg"
-          prepend-icon="mdi-cart-outline"
-          @click="cartRedirect"
-        >
-          Go to Cart
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+              <div class="text-body-1">
+                Are you sure you want to delete
+
+                <strong class="text-error">
+                  {{ productToDelete?.name }}
+                </strong>
+
+                ?
+              </div>
+            </div>
+          </v-card>
+        </v-card-text>
+
+        <v-divider />
+
+        <!-- Actions -->
+
+        <v-card-actions class="pa-5">
+          <v-spacer />
+
+          <v-btn variant="text" @click="deleteDialog = false"> Cancel </v-btn>
+
+          <v-btn
+            color="error"
+            variant="flat"
+            rounded="lg"
+            prepend-icon="mdi-trash-can-outline"
+            @click="confirmDelete"
+          >
+            Delete
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- ====================================================== -->
+    <!-- ADDED TO CART DIALOG -->
+    <!-- ====================================================== -->
+
+    <v-dialog
+      v-model="cartDialog"
+      max-width="600"
+      @keyup.enter="cartDialog = false"
+      @keydown.tab="cartDialog = false"
+    >
+      <v-card rounded="xl" elevation="8">
+        <!-- Header -->
+
+        <v-card-title class="pa-6 pb-3">
+          <div class="d-flex align-center">
+            <v-avatar color="success" size="50" class="mr-4">
+              <v-icon color="white" size="28"> mdi-cart-check </v-icon>
+            </v-avatar>
+
+            <div>
+              <div class="text-h5 font-weight-bold">Added to Cart</div>
+
+              <div class="text-body-2 text-medium-emphasis mt-1">
+                Your item has been added successfully
+              </div>
+            </div>
+          </div>
+        </v-card-title>
+
+        <v-divider />
+
+        <!-- PRODUCT -->
+
+        <v-card-text class="pa-6">
+          <v-card variant="tonal" rounded="xl" class="pa-4">
+            <div class="d-flex align-center">
+              <!-- Image -->
+
+              <v-avatar size="110" rounded="lg" class="mr-5 bg-grey-lighten-4">
+                <v-img
+                  :src="productAddedToCart.image"
+                  alt="Product image"
+                  cover
+                >
+                  <template #error>
+                    <div class="d-flex align-center justify-center fill-height">
+                      <v-icon size="45" color="grey"> mdi-image-off </v-icon>
+                    </div>
+                  </template>
+                </v-img>
+              </v-avatar>
+
+              <!-- Details -->
+
+              <div class="flex-grow-1">
+                <div class="text-h6 font-weight-bold text-primary">
+                  {{ productAddedToCart.name }}
+                </div>
+
+                <div class="text-body-2 text-medium-emphasis mt-2">
+                  Added successfully to your shopping cart
+                </div>
+
+                <div class="text-h6 font-weight-bold mt-3">
+                  ${{ Number(productAddedToCart.price).toFixed(2) }}
+                </div>
+              </div>
+            </div>
+          </v-card>
+        </v-card-text>
+
+        <v-divider />
+
+        <!-- Actions -->
+
+        <v-card-actions class="pa-5">
+          <v-spacer />
+
+          <v-btn color="primary" variant="text" @click="cartDialog = false">
+            Continue Shopping
+          </v-btn>
+
+          <v-btn
+            color="primary"
+            variant="flat"
+            rounded="lg"
+            prepend-icon="mdi-cart-outline"
+            @click="cartRedirect"
+          >
+            Go to Cart
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </v-container>
 </template>
 
 <script>
