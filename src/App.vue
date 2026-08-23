@@ -23,7 +23,7 @@
           text
           :to="{ name: 'manage' }"
         >
-          Manage Product
+          Product Management
         </v-btn>
 
         <v-chip

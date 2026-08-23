@@ -92,3 +92,7 @@ export async function getProductById(productId) {
 export async function getUser(username) {
   return await db.users.where("name").equals(username).first();
 }
+
+export async function updateProduct(productId, product) {
+  return await db.products.update(productId, product);
+}

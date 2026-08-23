@@ -117,6 +117,13 @@
         <!--adding delete button-->
         <template v-slot:[`item.actions`]="{ item }">
           <v-btn
+            icon="mdi-pencil"
+            color="primary"
+            variant="text"
+            v-if="$store.state.isAdmin"
+            @click="editProduct(item.id)"
+          ></v-btn>
+          <v-btn
             icon="mdi-delete"
             color="red"
             variant="text"
@@ -168,8 +175,15 @@
               </p>
             </v-card-text>
 
-            <!--Delete button-->
+            <!--Delete and edit button-->
             <v-card-actions>
+              <v-btn
+                icon="mdi-pencil"
+                color="primary"
+                variant="text"
+                v-if="$store.state.isAdmin"
+                @click="editProduct(product.id)"
+              ></v-btn>
               <v-btn
                 icon="mdi-delete"
                 color="red"
@@ -184,7 +198,12 @@
     </v-container>
     <v-container>
       <v-row>
-        <v-btn icon="mdi-plus-box" @click="addProduct"></v-btn>
+        <v-btn
+          v-if="$store.state.isAdmin"
+          prepend-icon="mdi-plus-box"
+          @click="addProduct"
+          >Add Product</v-btn
+        >
       </v-row>
     </v-container>
   </v-container>
@@ -222,7 +241,6 @@ import {
   getProductsByName,
   getProductsByDateRange,
   deleteProduct,
-  addProduct,
 } from "@/db/dbCommunicator.js";
 
 export default defineComponent({
@@ -370,18 +388,17 @@ export default defineComponent({
       });
     },
 
-    //Add product(for now hardcoded)
-    async addProduct() {
-      await addProduct({
-        id: 21,
-        name: "Camping Backpack",
-        description: "Durable waterproof backpack for outdoor adventures",
-        price: 54.99,
-        category: "outdoor",
-        stockAvailability: 27,
-        dateOfCreation: "2026-04-18",
+    editProduct(id) {
+      this.$router.push({
+        name: "manage",
+        query: {
+          id: id,
+        },
       });
-      this.products = await getAllProducts();
+    },
+
+    addProduct() {
+      this.$router.push({ name: "manage" });
     },
 
     async deleteProduct() {
