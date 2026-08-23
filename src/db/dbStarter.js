@@ -8,7 +8,7 @@ db.version(1).stores({
   products: "++id, name, category, price, stockAvailability, dateOfCreation",
   orders: "++id, clientId, dateOfPurchase, totalPrice",
   orderDetails: "[orderId+productId], orderId, productId, amount, dateOfPurchase",
-  users: "++id, name, &email, isAdmin"
+  users: "++id, name, password, isAdmin"
 });
 
 // Seed Initial Data
@@ -35,5 +35,10 @@ db.on("populate", async () => {
     { id: 18, name: "Laptop Stand", description: "Aluminum adjustable laptop riser", price: 27.99, category: "office_supplies", stockAvailability: 50, dateOfCreation: "2026-03-06" },
     { id: 19, name: "Camping Hammock", description: "Portable double hammock with straps", price: 38.00, category: "outdoor", stockAvailability: 28, dateOfCreation: "2026-03-10" },
     { id: 20, name: "Garden Lanterns", description: "Solar powered outdoor lights pack", price: 31.50, category: "outdoor", stockAvailability: 42, dateOfCreation: "2026-03-11" }
+  ]);
+
+  await db.users.bulkAdd([
+    {id: 1, name: "admin", password: "admin123", isAdmin: true},
+    {id: 2, name: "mishel", password: "mi", isAdmin: false},
   ]);
 });

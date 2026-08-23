@@ -88,3 +88,7 @@ export async function deleteProduct(productId) {
 export async function getProductById(productId) {
   return await db.products.get(productId);
 }
+
+export async function getUser(username) {
+  return await db.users.where("name").equals(username).first();
+}

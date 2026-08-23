@@ -1,9 +1,26 @@
 import { createStore } from "vuex";
 
 export default createStore({
-  state: {},
+  state: {
+    username: "",
+    isAdmin: false,
+  },
+
   getters: {},
-  mutations: {},
+
+  mutations: {
+    setUser(state, user) {
+      state.username = user.name;
+      state.isAdmin = user.isAdmin;
+    },
+
+    logout(state) {
+      state.username = "";
+      state.isAdmin = false;
+    },
+  },
+
   actions: {},
+
   modules: {},
 });
