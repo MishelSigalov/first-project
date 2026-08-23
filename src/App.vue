@@ -1,74 +1,122 @@
 <template>
   <v-app>
     <v-main>
-      <v-toolbar class="my-toolbar" color="primary" dark>
-        <v-toolbar-title class="text-black"> Mishel's Shop </v-toolbar-title>
+      <v-toolbar class="my-toolbar px-4" color="primary" elevation="4">
+        <!-- Logo / Shop name -->
+        <v-toolbar-title class="shop-title">
+          <v-icon class="mr-2">mdi-storefront-outline</v-icon>
+          Mishel's Shop
+        </v-toolbar-title>
 
-        <v-btn rounded text :to="{ name: 'catalog' }"> Products </v-btn>
-        <v-btn
-          v-if="$store.state.isAdmin"
-          rounded
-          text
-          :to="{ name: 'manage' }"
-        >
-          Product Management
-        </v-btn>
-
-        <v-spacer></v-spacer>
-        <v-btn
-          v-if="!$store.state.username"
-          rounded
-          text
-          :to="{ name: 'login' }"
-        >
-          Login
-        </v-btn>
-
-        <!--cart-->
-        <v-btn icon :to="{ name: 'cart' }">
-          <v-badge
-            v-if="cartCount > 0"
-            :content="cartCount"
-            color="red"
-            floating
+        <!-- Main navigation -->
+        <div class="nav-links">
+          <v-btn
+            rounded="lg"
+            variant="text"
+            :to="{ name: 'catalog' }"
+            prepend-icon="mdi-store-outline"
+            class="products-btn"
           >
-            <v-icon>mdi-cart</v-icon>
-          </v-badge>
+            Products
+          </v-btn>
 
-          <v-icon v-else>mdi-cart</v-icon>
-        </v-btn>
-
-        <!--orders-->
-        <v-btn
-          v-if="$store.state.username"
-          :to="{ name: 'orders' }"
-          variant="text"
-          prepend-icon="mdi-package-check-outline"
-        >
-          Orders
-        </v-btn>
-
-        <!--username and logout-->
-        <v-chip
-          v-if="$store.state.username"
-          class="ml-3 mr-4"
-          color="white"
-          variant="outlined"
-        >
-          <v-icon :color="$store.state.isAdmin ? 'red' : undefined" start
-            >mdi-account</v-icon
+          <v-btn
+            v-if="$store.state.isAdmin"
+            rounded="lg"
+            variant="text"
+            :to="{ name: 'manage' }"
+            prepend-icon="mdi-cog-outline"
           >
-          Logged in: {{ $store.state.username }}
-        </v-chip>
+            Product Management
+          </v-btn>
+        </div>
 
-        <v-btn
-          v-if="$store.state.username"
-          color="red"
-          variant="text"
-          @click="logout"
-        >
-          logout
-        </v-btn>
+        <v-spacer />
+
+        <!-- Right side -->
+        <div class="nav-actions">
+          <!-- Login -->
+          <v-btn
+            v-if="!$store.state.username"
+            rounded="lg"
+            variant="outlined"
+            prepend-icon="mdi-login"
+            :to="{ name: 'login' }"
+          >
+            Login
+          </v-btn>
+
+          <!-- Cart -->
+          <v-btn
+            icon
+            variant="text"
+            :to="{ name: 'cart' }"
+            class="nav-icon-btn"
+          >
+            <v-badge
+              v-if="cartCount > 0"
+              :content="cartCount"
+              color="error"
+              floating
+            >
+              <v-icon size="26">mdi-cart-outline</v-icon>
+            </v-badge>
+
+            <v-icon v-else size="26"> mdi-cart-outline </v-icon>
+
+            <v-tooltip activator="parent" location="bottom"> Cart </v-tooltip>
+          </v-btn>
+
+          <!-- Orders -->
+          <v-btn
+            v-if="$store.state.username"
+            :to="{ name: 'orders' }"
+            variant="text"
+            rounded="lg"
+          >
+            <v-icon class="mr-1">mdi-package-variant-closed</v-icon>
+
+            Orders
+          </v-btn>
+
+          <!-- User -->
+          <v-menu v-if="$store.state.username">
+            <template #activator="{ props }">
+              <v-btn
+                v-bind="props"
+                rounded="lg"
+                variant="tonal"
+                class="user-btn"
+              >
+                <v-avatar size="30" class="mr-2">
+                  <v-icon :color="$store.state.isAdmin ? 'red' : undefined">
+                    mdi-account
+                  </v-icon>
+                </v-avatar>
+
+                {{ $store.state.username }}
+
+                <v-icon class="ml-1"> mdi-chevron-down </v-icon>
+              </v-btn>
+            </template>
+
+            <v-list rounded="lg" elevation="4">
+              <v-list-item
+                prepend-icon="mdi-account-outline"
+                :title="$store.state.username"
+                :subtitle="$store.state.isAdmin ? 'Administrator' : 'Customer'"
+              />
+
+              <v-divider class="my-2" />
+
+              <v-list-item
+                prepend-icon="mdi-logout"
+                title="Logout"
+                @click="logout"
+              />
+            </v-list>
+          </v-menu>
+        </div>
       </v-toolbar>
 
       <router-view />
@@ -147,7 +195,58 @@ export default {
 </script>
 
 <style>
-.my-toolbar * {
-  font-weight: bold;
+.my-toolbar {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.shop-title {
+  display: flex;
+  align-items: center;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 35px;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nav-icon-btn {
+  transition: transform 0.2s ease;
+}
+
+.nav-icon-btn:hover {
+  transform: scale(1.08);
+}
+
+.user-btn {
+  margin-left: 8px;
+  font-weight: 700;
+}
+
+.my-toolbar .v-btn {
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.my-toolbar .v-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.products-btn {
+  font-size: 1.1rem;
+  padding: 0 20px;
+  min-width: 130px;
+  height: 44px;
 }
 </style>

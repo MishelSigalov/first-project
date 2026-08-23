@@ -118,6 +118,11 @@
         item-value="name"
         fixed-header
       >
+        <template v-slot:[`item.name`]="{ item }">
+          <span class="text-primary font-weight-bold text-h2">
+            {{ item.name }}
+          </span>
+        </template>
         <!--Removing underscores-->
         <template v-slot:[`item.category`]="{ item }">
           {{ item.category?.replace(/_/g, " ") }}
@@ -182,7 +187,9 @@
           md="4"
         >
           <v-card class="pa-4" variant="outlined">
-            <v-card-title>{{ product.name }} </v-card-title>
+            <v-card-title class="text-primary font-weight-bold"
+              >{{ product.name }}
+            </v-card-title>
             <v-card-subtitle
               >Category:
               {{ product.category?.replace(/_/g, " ") }}</v-card-subtitle
