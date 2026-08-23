@@ -74,6 +74,7 @@
               maxlength="10"
               hide-details="auto"
               clearable
+              @input="startDateInput = formatDate(startDateInput)"
             />
           </v-col>
 
@@ -88,6 +89,7 @@
               maxlength="10"
               hide-details="auto"
               clearable
+              @input="startDateInput = formatDate(startDateInput)"
             />
           </v-col>
 
@@ -411,12 +413,10 @@ export default defineComponent({
 
     handleList() {
       this.currentView = 0;
-      console.log(this.currentView);
     },
 
     handleGrid() {
       this.currentView = 1;
-      console.log(this.currentView);
     },
 
     async filterProducts() {
@@ -467,20 +467,46 @@ export default defineComponent({
       this.products = await getAllProducts();
     },
 
-    async sortByPrice() {
+    sortByPrice() {
       this.priceAscending = !this.priceAscending;
 
-      const sort = this.priceAscending ? "priceAsc" : "priceDesc";
-
-      this.products = await getAllProducts(sort);
+      this.products.sort((a, b) => {
+        return this.priceAscending ? a.price - b.price : b.price - a.price;
+      });
     },
 
-    async sortByDate() {
+    sortByDate() {
       this.dateAscending = !this.dateAscending;
 
-      const sort = this.dateAscending ? "dateAsc" : "dateDesc";
+      this.products.sort((a, b) => {
+        return this.dateAscending
+          ? a.dateOfCreation.localeCompare(b.dateOfCreation)
+          : b.dateOfCreation.localeCompare(a.dateOfCreation);
+      });
+    },
 
-      this.products = await getAllProducts(sort);
+    formatDate(value) {
+      // Remove anything that isn't a number
+      let numbers = value.replace(/\D/g, "");
+
+      // Maximum 8 digits: DDMMYYYY
+      numbers = numbers.substring(0, 8);
+
+      if (numbers.length > 4) {
+        return (
+          numbers.substring(0, 2) +
+          "/" +
+          numbers.substring(2, 4) +
+          "/" +
+          numbers.substring(4)
+        );
+      }
+
+      if (numbers.length > 2) {
+        return numbers.substring(0, 2) + "/" + numbers.substring(2);
+      }
+
+      return numbers;
     },
 
     //old functions: combined them into one
