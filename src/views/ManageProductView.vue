@@ -80,24 +80,55 @@
           :rules="[requiredRule, dateRule]"
         />
 
-        <v-file-input
-          v-model="imageFile"
-          label="Product Image"
-          accept="image/png"
-          prepend-inner-icon="mdi-image"
-          variant="outlined"
-          class="mb-3"
-          :rules="[imageRule]"
-          @update:model-value="previewImage"
-        />
+        <!-- Image -->
+        <div class="mb-5">
+          <v-card variant="outlined" rounded="lg" class="pa-4">
+            <div class="d-flex align-center">
+              <v-avatar size="80" rounded="lg" class="mr-4 bg-grey-lighten-3">
+                <v-img v-if="imagePreview" :src="imagePreview" contain />
 
-        <v-img
-          v-if="imagePreview"
-          :src="imagePreview"
-          height="200"
-          contain
-          class="mb-5 rounded-lg"
-        ></v-img>
+                <v-icon v-else size="40" color="grey">
+                  mdi-image-outline
+                </v-icon>
+              </v-avatar>
+
+              <div class="flex-grow-1">
+                <div class="text-subtitle-1 font-weight-bold">
+                  Product Image
+                </div>
+
+                <div
+                  v-if="product.image"
+                  class="text-body-2 text-medium-emphasis mb-2"
+                >
+                  {{ product.image }}
+                </div>
+
+                <div v-else class="text-body-2 text-medium-emphasis mb-2">
+                  No image selected
+                </div>
+
+                <v-btn
+                  color="primary"
+                  variant="tonal"
+                  size="small"
+                  prepend-icon="mdi-upload"
+                  @click="$refs.imageInput.click()"
+                >
+                  Choose Image
+                </v-btn>
+
+                <input
+                  ref="imageInput"
+                  type="file"
+                  accept="image/png"
+                  hidden
+                  @change="handleImageUpload"
+                />
+              </div>
+            </div>
+          </v-card>
+        </div>
 
         <!-- Save -->
         <v-btn type="submit" color="primary" size="large" block>
@@ -188,6 +219,8 @@ export default {
         category: "",
         stockAvailability: null,
         dateOfCreation: "",
+        image: null,
+        imagePreview: null,
       },
 
       categories: [
@@ -228,6 +261,10 @@ export default {
   methods: {
     openSaveDialog() {
       this.saveDialog = true;
+    },
+
+    closeSaveDialog() {
+      this.saveDialog = false;
     },
 
     //rules
@@ -314,7 +351,7 @@ export default {
           category: this.product.category,
           stockAvailability: this.product.stockAvailability,
           dateOfCreation: this.product.dateOfCreation,
-          image: this.image,
+          image: this.product.image,
         };
         await addProduct(productToSave);
 
@@ -322,9 +359,24 @@ export default {
       }
     },
 
-    closeSaveDialog() {
-      this.saveDialog = false;
-      this.$router.push({ name: "catalog" });
+    previewImage(file) {
+      if (!file) {
+        this.imagePreview = null;
+        return;
+      }
+
+      this.imagePreview = URL.createObjectURL(file);
+    },
+
+    handleImageUpload(event) {
+      const file = event.target.files[0];
+
+      if (!file) return;
+
+      this.image = file;
+      this.imagePreview = URL.createObjectURL(file);
+
+      this.product.image = `/pictures/${file.name}`;
     },
   },
 };
