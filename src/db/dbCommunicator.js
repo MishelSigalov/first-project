@@ -96,3 +96,9 @@ export async function getUser(username) {
 export async function updateProduct(productId, product) {
   return await db.products.update(productId, product);
 }
+
+export async function doesProductExist(name) {
+  const product = await db.products.where("name").equals(name).first();
+
+  return product;
+}

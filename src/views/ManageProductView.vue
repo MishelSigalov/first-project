@@ -10,16 +10,18 @@
         <v-text-field
           v-model="product.name"
           label="Product Name"
+          name="product name"
           prepend-inner-icon="mdi-tag"
           variant="outlined"
           class="mb-3"
-          :rules="[requiredRule]"
+          :rules="[requiredRule, nameRule]"
         />
 
         <!-- Description -->
         <v-textarea
           v-model="product.description"
           label="Description"
+          name="product description"
           prepend-inner-icon="mdi-text"
           variant="outlined"
           rows="3"
@@ -31,6 +33,7 @@
         <v-text-field
           v-model.number="product.price"
           label="Price ($)"
+          name="price"
           type="number"
           min="0"
           step="0.01"
@@ -45,6 +48,7 @@
           v-model="product.category"
           :items="categories"
           label="Category"
+          name="category"
           prepend-inner-icon="mdi-shape"
           variant="outlined"
           class="mb-3"
@@ -56,6 +60,7 @@
           v-model.number="product.stockAvailability"
           label="Amount in Stock"
           type="number"
+          name="stock"
           min="0"
           prepend-inner-icon="mdi-package-variant"
           variant="outlined"
@@ -67,6 +72,7 @@
         <v-text-field
           v-model="product.dateOfCreation"
           label="Date of Creation"
+          name="date"
           type="date"
           prepend-inner-icon="mdi-calendar"
           variant="outlined"
@@ -84,6 +90,52 @@
         </v-btn>
       </v-form>
     </v-card>
+
+    <!--Custom dialogs-->
+    <!--save dialog-->
+    <v-dialog v-model="saveDialog" max-width="400">
+      <v-card>
+        <v-card-title class="text-h2">
+          {{ isEditing ? " Edit Successful !" : " Add Successful !" }}
+        </v-card-title>
+
+        <v-card-text class="text-h5">
+          <strong class="text-primary">{{ product.name }}</strong>
+          {{ isEditing ? " updated" : " added" }}
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+
+          <v-btn color="primary" variant="text" @click="closeSaveDialog">
+            Okay
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <!--error dialog-->
+    <v-dialog v-model="errorDialog" max-width="600">
+      <v-card>
+        <v-card-title class="text-h2 text-red font-weight-bold">
+          {{ isEditing ? " Edit Failed" : " Adding Failed" }}
+        </v-card-title>
+
+        <v-card-text>
+          <div v-for="error in submitErrors" :key="error.id" class="mb-2">
+            <strong class="error-id">{{ error.id }}:</strong>
+            {{ error.errorMessages[0] }}
+          </div>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+
+          <v-btn color="primary" variant="text" @click="errorDialog = false">
+            Okay
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -92,6 +144,7 @@ import {
   addProduct,
   getProductById,
   updateProduct,
+  doesProductExist,
 } from "@/db/dbCommunicator.js";
 
 export default {
@@ -118,6 +171,10 @@ export default {
         "office_supplies",
         "outdoor",
       ],
+
+      saveDialog: false,
+      errorDialog: false,
+      submitErrors: null,
     };
   },
 
@@ -140,6 +197,32 @@ export default {
   },
 
   methods: {
+    openSaveDialog() {
+      this.saveDialog = true;
+    },
+
+    //rules
+    async nameRule(value) {
+      if (!value) return true;
+
+      const existingProduct = await doesProductExist(value);
+
+      // No product with this name exists
+      if (!existingProduct) {
+        return true;
+      }
+
+      // If editing, check if the existing product is the same product
+      if (
+        this.isEditing &&
+        existingProduct.id === Number(this.$route.query.id)
+      ) {
+        return true;
+      }
+
+      return "A product with this name already exists";
+    },
+
     requiredRule(value) {
       return (
         (value !== null && value !== undefined && value !== "") ||
@@ -178,13 +261,22 @@ export default {
     },
 
     async saveProduct() {
+      const { valid, errors } = await this.$refs.form.validate();
+
+      if (!valid) {
+        this.submitErrors = errors;
+        this.errorDialog = true;
+        return;
+      }
+
+      // Only reaches here if ALL rules passed
       //checking either its an edit product request or a add product
       if (this.isEditing) {
         const productId = Number(this.$route.query.id);
 
         await updateProduct(productId, this.product);
 
-        alert("Product updated successfully!");
+        this.saveDialog = true;
       } else {
         const productToSave = {
           name: this.product.name,
@@ -194,14 +286,23 @@ export default {
           stockAvailability: this.product.stockAvailability,
           dateOfCreation: this.product.dateOfCreation,
         };
-
         await addProduct(productToSave);
 
-        alert("Product added successfully!");
+        this.saveDialog = true;
       }
+    },
 
+    closeSaveDialog() {
+      this.saveDialog = false;
       this.$router.push({ name: "catalog" });
     },
   },
 };
 </script>
+
+<style>
+.error-id {
+  font-size: 18px !important;
+  font-weight: 700;
+}
+</style>

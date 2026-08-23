@@ -32,7 +32,9 @@
           color="white"
           variant="outlined"
         >
-          <v-icon start>mdi-account</v-icon>
+          <v-icon :color="$store.state.isAdmin ? 'red' : undefined" start
+            >mdi-account</v-icon
+          >
           Logged in: {{ $store.state.username }}
         </v-chip>
 

@@ -28,6 +28,7 @@
         </v-card>
       </v-col>
     </v-row>
+    <!--Search/ filter Displayer-->
     <vrow>
       <v-card class="pa-4 mb-4" elevation="1" rounded="md">
         <v-row>
@@ -97,6 +98,17 @@
       </v-card>
     </vrow>
 
+    <!--Add product button-->
+    <v-row>
+      <v-btn
+        v-if="$store.state.isAdmin"
+        color="primary"
+        prepend-icon="mdi-plus-box"
+        @click="addProduct"
+        >Add Product</v-btn
+      >
+    </v-row>
+
     <!--List View-->
     <v-container v-if="currentView == 0">
       <v-data-table-virtual
@@ -136,7 +148,7 @@
 
     <!--Grid View-->
     <v-container v-if="currentView == 1">
-      <v-row class="text-end">
+      <v-row>
         <v-btn @click="sortByPrice">
           Price
           <v-icon>
@@ -160,7 +172,7 @@
           md="4"
         >
           <v-card class="pa-4" variant="outlined">
-            <v-card-title>{{ product.name }}</v-card-title>
+            <v-card-title>{{ product.name }} </v-card-title>
             <v-card-subtitle
               >Category:
               {{ product.category?.replace(/_/g, " ") }}</v-card-subtitle
@@ -194,16 +206,6 @@
             </v-card-actions>
           </v-card>
         </v-col>
-      </v-row>
-    </v-container>
-    <v-container>
-      <v-row>
-        <v-btn
-          v-if="$store.state.isAdmin"
-          prepend-icon="mdi-plus-box"
-          @click="addProduct"
-          >Add Product</v-btn
-        >
       </v-row>
     </v-container>
   </v-container>
