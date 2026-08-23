@@ -4,6 +4,7 @@ import {
   removeProductFromCart,
   clearCart,
   getCart,
+  decreaseQuantity,
 } from "@/db/dbCommunicator.js";
 
 export default createStore({
@@ -60,6 +61,11 @@ export default createStore({
     async addToCart({ commit }, { productId, clientId }) {
       const cart = await addProductToCart(productId, clientId);
 
+      commit("setCart", cart);
+    },
+
+    async decreaseQuantity({ commit }, { productId, clientId }) {
+      const cart = await decreaseQuantity(productId, clientId);
       commit("setCart", cart);
     },
 

@@ -133,6 +133,30 @@ export async function addProductToCart(productId, clientId) {
   return cart;
 }
 
+// REDUCE QUANTITY BY 1
+export async function decreaseQuantity(productId, clientId) {
+  const cart = await db.orderDetails.where("clientId").equals(clientId).first();
+  if (!cart) return null;
+  const productIndex = cart.products.findIndex((item) => item[0] === productId);
+
+  if (productIndex === -1) {
+    return cart;
+  }
+
+  // Reduce quantity by 1
+  cart.products[productIndex][1]--;
+
+  // If quantity reaches 0, remove the product
+  if (cart.products[productIndex][1] <= 0) {
+    cart.products.splice(productIndex, 1);
+  }
+
+  // Save the updated cart
+  await db.orderDetails.put(cart);
+
+  return cart;
+}
+
 export async function removeProductFromCart(productId, clientId) {
   const cart = await db.orderDetails.where("clientId").equals(clientId).first();
 
