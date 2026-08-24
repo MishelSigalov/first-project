@@ -283,3 +283,12 @@ export async function addOrder(listId, clientId, totalPrice) {
 
   return await db.orders.get(orderId);
 }
+
+export async function deleteOrder(orderId) {
+  const order = await db.orders.where("id").equals(orderId).first();
+
+  if (!order) return false;
+
+  await db.orders.delete(orderId);
+  return true;
+}
