@@ -208,7 +208,6 @@ export async function getOrders(clientId) {
 }
 
 export async function addOrder(listId, clientId, totalPrice) {
-  // Get current cart
   const cart = await db.orderDetails.get(listId);
 
   if (!cart) {
@@ -221,15 +220,33 @@ export async function addOrder(listId, clientId, totalPrice) {
 
   const orderProducts = [];
 
-  // Get information about every product in the cart
+  // Get products and check stock
   for (const item of cart.products) {
     const productId = item[0];
-    const amount = item[1];
+    const amount = Number(item[1]);
 
     const product = await db.products.get(productId);
 
     if (!product) {
       throw new Error(`Product ${productId} not found`);
+    }
+
+    console.log(
+      "BEFORE STOCK UPDATE:",
+      product.name,
+      product.stockAvailability,
+      "ordering:",
+      amount
+    );
+
+    if (Number(product.stockAvailability) < amount) {
+      throw new Error(
+        `Not enough stock for "${product.name}".\n\nOnly ${
+          product.stockAvailability
+        } ${
+          product.stockAvailability === 1 ? "item is" : "items are"
+        } currently available.`
+      );
     }
 
     orderProducts.push({
@@ -241,7 +258,19 @@ export async function addOrder(listId, clientId, totalPrice) {
     });
   }
 
-  // Create the order
+  // Decrease stock
+  for (const item of orderProducts) {
+    const product = await db.products.get(item.productId);
+
+    const oldStock = Number(product.stockAvailability);
+    const newStock = oldStock - Number(item.amount);
+
+    await db.products.update(item.productId, {
+      stockAvailability: newStock,
+    });
+  }
+
+  // Create order
   const orderId = await db.orders.add({
     clientId: clientId,
     dateOfPurchase: new Date(),
@@ -249,18 +278,8 @@ export async function addOrder(listId, clientId, totalPrice) {
     products: orderProducts,
   });
 
-  // Delete the shopping cart after successful purchase
+  // Delete cart
   await db.orderDetails.delete(listId);
 
-  // Return the newly created order
   return await db.orders.get(orderId);
-}
-
-export async function deleteOrder(orderId) {
-  const order = await db.orders.where("id").equals(orderId).first();
-
-  if (!order) return false;
-
-  await db.orders.delete(orderId);
-  return true;
 }

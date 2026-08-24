@@ -70,7 +70,7 @@
                       cover
                     >
                       <template #error>
-                        <v-icon size="36" color="grey"> mdi-image-off </v-icon>
+                        <v-icon size="36" color="grey">mdi-image-off</v-icon>
                       </template>
                     </v-img>
                   </v-avatar>
@@ -146,19 +146,16 @@
 
           <div class="d-flex justify-space-between mb-3">
             <span class="text-medium-emphasis">Items</span>
-
             <span>{{ cartCount }}</span>
           </div>
 
           <div class="d-flex justify-space-between mb-3">
             <span class="text-medium-emphasis">Subtotal</span>
-
             <span>${{ subtotal.toFixed(2) }}</span>
           </div>
 
           <div class="d-flex justify-space-between mb-4">
             <span class="text-medium-emphasis">Shipping</span>
-
             <span class="text-success">Free</span>
           </div>
 
@@ -208,17 +205,17 @@
     </v-card>
   </v-container>
 
+  <!-- ORDER SUCCESS DIALOG -->
   <v-dialog
     v-model="orderDialog"
     max-width="550"
     @keyup.enter="orderDialog = false"
   >
     <v-card rounded="xl" elevation="8">
-      <!-- Header -->
       <v-card-title class="pa-6 pb-3">
         <div class="d-flex align-center">
           <v-avatar color="success" size="52" class="mr-4">
-            <v-icon color="white" size="30"> mdi-shopping </v-icon>
+            <v-icon color="white" size="30">mdi-shopping</v-icon>
           </v-avatar>
 
           <div>
@@ -233,7 +230,6 @@
 
       <v-divider />
 
-      <!-- Message -->
       <v-card-text class="pa-6">
         <v-card variant="tonal" color="success" rounded="lg" class="pa-4">
           <div class="d-flex align-center">
@@ -254,7 +250,6 @@
 
       <v-divider />
 
-      <!-- Actions -->
       <v-card-actions class="pa-5">
         <v-spacer></v-spacer>
 
@@ -268,6 +263,65 @@
           @click="orderRedirect"
         >
           Go to Orders
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+
+  <!-- NOT ENOUGH STOCK DIALOG -->
+  <v-dialog
+    v-model="stockErrorDialog"
+    max-width="500"
+    @keyup.enter="stockErrorDialog = false"
+  >
+    <v-card rounded="xl" elevation="8">
+      <!-- Header -->
+      <v-card-title class="pa-6 pb-3">
+        <div class="d-flex align-center">
+          <v-avatar color="error" size="52" class="mr-4">
+            <v-icon color="white" size="30"> mdi-alert-circle </v-icon>
+          </v-avatar>
+
+          <div>
+            <div class="text-h5 font-weight-bold">Not Enough Stock</div>
+
+            <div class="text-body-2 text-medium-emphasis mt-1">
+              We couldn't complete your order
+            </div>
+          </div>
+        </div>
+      </v-card-title>
+
+      <v-divider />
+
+      <!-- Error message -->
+      <v-card-text class="pa-6">
+        <v-card variant="tonal" color="error" rounded="lg" class="pa-4">
+          <div class="d-flex align-start">
+            <v-icon color="error" size="28" class="mr-3">
+              mdi-package-variant-remove
+            </v-icon>
+
+            <div class="text-body-1">
+              {{ stockErrorMessage }}
+            </div>
+          </div>
+        </v-card>
+      </v-card-text>
+
+      <v-divider />
+
+      <!-- Actions -->
+      <v-card-actions class="pa-5">
+        <v-spacer></v-spacer>
+
+        <v-btn
+          color="error"
+          variant="flat"
+          rounded="lg"
+          @click="stockErrorDialog = false"
+        >
+          Okay
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -293,6 +347,10 @@ export default {
       cart: null,
       products: {},
       orderDialog: false,
+
+      // Added only for the stock error dialog
+      stockErrorDialog: false,
+      stockErrorMessage: "",
     };
   },
 
@@ -396,14 +454,21 @@ export default {
       }
 
       try {
-        await addOrder(this.cart.id, this.userID, this.subtotal);
+        const order = await addOrder(this.cart.id, this.userID, this.subtotal);
 
-        this.orderDialog = true;
+        console.log("Order created:", order);
 
+        // Only clear the cart after successful checkout
         this.cart = null;
         this.products = {};
+
+        this.orderDialog = true;
       } catch (error) {
         console.error("Checkout failed:", error);
+
+        // Show the custom dialog instead of browser alert
+        this.stockErrorMessage = error.message;
+        this.stockErrorDialog = true;
       }
     },
   },

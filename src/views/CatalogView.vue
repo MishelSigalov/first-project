@@ -714,6 +714,10 @@ export default defineComponent({
     this.products = await getAllProducts();
   },
   watch: {
+    async $route() {
+      this.products = await getAllProducts();
+    },
+
     startDateInput(newVal) {
       if (!newVal) {
         // Triggers when the 'x' clear button is clicked or text is deleted
@@ -734,6 +738,11 @@ export default defineComponent({
     },
 
     async addToCart(product) {
+      if (product.stockAvailability <= 0) {
+        this.outOfStockDialog = true;
+        return;
+      }
+
       this.productAddedToCart = product;
       this.cartDialog = true;
 
