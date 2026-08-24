@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
 import Dexie from "dexie";
+import { hashPassword } from "./passwordUtils.js";
 
 export const db = new Dexie("StoreDatabase");
 
@@ -38,7 +39,17 @@ db.on("populate", async () => {
   ]);
 
   await db.users.bulkAdd([
-    {id: 1, name: "admin", password: "admin123", isAdmin: true},
-    {id: 2, name: "mishel", password: "mi", isAdmin: false},
+    {
+      id: 1,
+      name: "admin",
+      password: await hashPassword("admin123"),
+      isAdmin: true,
+    },
+    {
+      id: 2,
+      name: "mishel",
+      password: await hashPassword("mi"),
+      isAdmin: false,
+    },
   ]);
 });

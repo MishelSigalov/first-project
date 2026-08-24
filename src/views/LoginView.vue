@@ -49,25 +49,59 @@
       </v-card>
     </div>
 
-    <!--error dialog-->
+    <!-- Login Error Dialog -->
     <v-dialog
       v-model="errorDialog"
-      max-width="300"
+      max-width="500"
       @keyup.enter="errorDialog = false"
     >
-      <v-card>
-        <v-card-title class="text-h2 text-red font-weight-bold">
-          Login Failed
+      <v-card rounded="xl" elevation="8">
+        <!-- Header -->
+        <v-card-title class="pa-6 pb-3">
+          <div class="d-flex align-center">
+            <v-avatar color="error" size="52" class="mr-4">
+              <v-icon color="white" size="30"> mdi-alert-circle </v-icon>
+            </v-avatar>
+
+            <div>
+              <div class="text-h5 font-weight-bold">Login Failed</div>
+
+              <div class="text-body-2 text-medium-emphasis mt-1">
+                We couldn't log you in
+              </div>
+            </div>
+          </div>
         </v-card-title>
 
-        <v-card-text>
-          {{ errorMessage }}
+        <v-divider />
+
+        <!-- Error Message -->
+        <v-card-text class="pa-6">
+          <v-card color="error" variant="tonal" rounded="lg" class="pa-4">
+            <div class="d-flex align-center">
+              <v-icon color="error" size="28" class="mr-3">
+                mdi-information
+              </v-icon>
+
+              <div class="text-body-1">
+                {{ errorMessage }}
+              </div>
+            </div>
+          </v-card>
         </v-card-text>
 
-        <v-card-actions>
-          <v-spacer></v-spacer>
+        <v-divider />
 
-          <v-btn color="primary" variant="text" @click="errorDialog = false">
+        <!-- Actions -->
+        <v-card-actions class="pa-5">
+          <v-spacer />
+
+          <v-btn
+            color="error"
+            variant="flat"
+            rounded="lg"
+            @click="errorDialog = false"
+          >
             Okay
           </v-btn>
         </v-card-actions>
@@ -78,6 +112,7 @@
 
 <script>
 import { getUser } from "@/db/dbCommunicator.js";
+import { hashPassword } from "@/db/passwordUtils.js";
 export default {
   name: "LoginView",
 
@@ -94,50 +129,54 @@ export default {
 
   methods: {
     async login() {
-      const user = await getUser(this.username);
-      this.print = user.id;
-      //check if there is an empry field
+      // Check empty username first
       if (!this.username) {
-        this.errorMessage = "User cant be empty";
+        this.errorMessage = "Username can't be empty";
         this.errorDialog = true;
         return;
       }
 
+      // Check empty password
       if (!this.password) {
-        this.errorMessage = "Password cant be empty";
+        this.errorMessage = "Password can't be empty";
         this.errorDialog = true;
         return;
       }
 
-      //check if user exists
+      const user = await getUser(this.username);
+
+      // Check user exists
       if (!user) {
         this.errorMessage = "User doesn't exist";
         this.errorDialog = true;
         return;
       }
 
-      // client login
+      // Client login
       if (this.loginType === "client" && user.isAdmin) {
         this.errorMessage = "User is Admin";
         this.errorDialog = true;
         return;
       }
 
-      // admin login
+      // Admin login
       if (this.loginType === "admin" && !user.isAdmin) {
         this.errorMessage = "User isn't Admin";
         this.errorDialog = true;
         return;
       }
 
-      // check password
-      if (user.password !== this.password) {
+      // Hash entered password
+      const hashedPassword = await hashPassword(this.password);
+
+      // Compare hashes
+      if (user.password !== hashedPassword) {
         this.errorMessage = "Password incorrect";
         this.errorDialog = true;
         return;
       }
 
-      //all tests passed
+      // Login successful
       await this.$store.dispatch("login", user);
 
       this.$router.push({ name: "catalog" });
